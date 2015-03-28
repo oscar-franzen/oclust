@@ -23,7 +23,7 @@ for example using the 'fastq_to_fasta' script:
 
 3. Run the first step in the pipeline:
 
-	```$ ./oclust_pipeline.pl -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
+   ```$ ./oclust_pipeline.pl -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
 
     General settings:
     -f [string]                Input fasta file.
