@@ -87,4 +87,4 @@ and compiled using: `./configure --prefix=~/local/emboss --disable-shared --with
 * The brewers of good beer.
 
 # Help/suggestions
-	<p.oscar.franzen@gmail.com>
+* p.oscar.franzen at gmail.com
