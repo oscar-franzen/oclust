@@ -1,6 +1,6 @@
 # Prologue/Requirements
-	- Linux.
-	- Perl 5.x.
+	- Linux
+	- Perl 5.x
 	- A computing cluster running LSF if you plan to run the Needleman-Wunsch pairwise alignments.
 
 # Input files
@@ -12,18 +12,24 @@ for example using the 'fastq_to_fasta' script:
 	$ fastq_to_fasta my_fastq.fq my_fasta.fa
 ```
 
-
 # Installation
 1. Get the repository:
-	$ git clone https://p.oscar.franzen@code.google.com/p/oclust/
+```
+	$ git clone https://github.com/oscar-franzen/oclust.git
+```
 
 2. Make executable (might not be necessary):
+```
 	$ chmod +x oclust_pipeline.pl oclust_finalize.pl
+```
 
 3. Enter an interactive node on the scavenger queue (might be different on your system) using 1 core:
+```
 	$ bsub -Is -q scavenger -W 12:00 -n 1 /bin/bash
+```
 
 4. Run the first step in the pipeline:
+```
 	$ cd oclust
 	$ ./oclust_pipeline.pl -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
 
@@ -45,14 +51,16 @@ for example using the 'fastq_to_fasta' script:
     -lsf_time [integer]        Runtime hours per job specified as number of hours (default=12).
     -lsf_memory [integer]      Requested amount of RAM in MB (default=20000).
     -lsf_nb_jobs [integer]     Number of jobs (default=20).
+```
 
 5. Run the last step in the pipeline:
+```
     $ ./oclust_finalize.pl -i <input directory>
 
     Settings:
     -i [string]                  Name of the output directory of `oclust_pipeline.pl'.
     -a [clustering algorithm]    Can be one of: complete, average, or single (default=complete).
-
+```
 6. If step 5 fails this is likely due to insufficient memory on the node. Try requesting more
    memory and run it again.
 
