@@ -14,19 +14,10 @@ for example using the 'fastq_to_fasta' script:
 
 # Installation
 1. Get the repository:
-
-```
    $ git clone https://github.com/oscar-franzen/oclust.git
-```
-
 2. Make executable (might not be necessary):
-
-```
-$ chmod +x oclust_pipeline.pl oclust_finalize.pl
-```
-
+   $ chmod +x oclust_pipeline.pl oclust_finalize.pl
 3. Run the first step in the pipeline:
-```
 	$ cd oclust
 	$ ./oclust_pipeline.pl -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
 
