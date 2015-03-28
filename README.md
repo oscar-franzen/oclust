@@ -17,17 +17,14 @@ for example using the 'fastq_to_fasta' script:
 ```
 	$ git clone https://github.com/oscar-franzen/oclust.git
 ```
-
 2. Make executable (might not be necessary):
 ```
 	$ chmod +x oclust_pipeline.pl oclust_finalize.pl
 ```
-
 3. Enter an interactive node on the scavenger queue (might be different on your system) using 1 core:
 ```
 	$ bsub -Is -q scavenger -W 12:00 -n 1 /bin/bash
 ```
-
 4. Run the first step in the pipeline:
 ```
 	$ cd oclust
@@ -52,7 +49,6 @@ for example using the 'fastq_to_fasta' script:
     -lsf_memory [integer]      Requested amount of RAM in MB (default=20000).
     -lsf_nb_jobs [integer]     Number of jobs (default=20).
 ```
-
 5. Run the last step in the pipeline:
 ```
     $ ./oclust_finalize.pl -i <input directory>
