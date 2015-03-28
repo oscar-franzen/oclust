@@ -46,7 +46,7 @@ for example using the 'fastq_to_fasta' script:
    -lsf_nb_jobs [integer]     Number of jobs (default=20).
    ```
 
-5. Run the last step in the pipeline:
+4. Run the last step in the pipeline:
 
    ```
    $ ./oclust_finalize.pl -i <input directory>
@@ -56,17 +56,16 @@ for example using the 'fastq_to_fasta' script:
    -a [clustering algorithm]    Can be one of: complete, average, or single (default=complete).
    ```
 
-6. If step 5 fails this is likely due to insufficient memory on the node. Try requesting more memory and run it again.
+5. If step 5 fails this is likely due to insufficient memory on the node. Try requesting more memory and run it again.
 
-7. If everything went fine there should now be files with the extension `hclust' in the specified directory. These files are space-delimited and contain two columns (with header). The first column contains the identifier of the sequencing read and the second column contains the OTU (cluster) designation. Clustering is performed on four distances (0.01 to 0.04). If other distances are desired this can be achieved by modifying `hclust.R' in the `utils' directory.
-
+6. If everything went fine there should now be files with the extension `hclust` in the specified directory. These files are space-delimited and contain two columns (with header). The first column contains the identifier of the sequencing read and the second column contains the OTU (cluster) designation. Clustering is performed on four distances (0.01 to 0.04). If other distances are desired this can be achieved by modifying `hclust.R` in the `utils` directory.
 
 # Acknowledgements/Dependencies
 The pipeline consists of the following components:
 
 * EMBOSS, version 6.6.0 was downloaded from ftp://emboss.open-bio.org/pub/EMBOSS/EMBOSS-6.6.0.tar.gz,
-and compiled using: `./configure --prefix=~/local/emboss --disable-shared --without-mysql'.
-* R, compiled with: `./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no'.
+and compiled using: `./configure --prefix=~/local/emboss --disable-shared --without-mysql`.
+* R, compiled with: `./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no`.
 * Perl.
 * BioPerl.
 * NCBI BLAST.
