@@ -10,7 +10,7 @@ for example using the 'fastq_to_fasta' script:
 
 ```
    $ chmod +x fastq_to_fasta
-	$ fastq_to_fasta my_fastq.fq my_fasta.fasta
+   $ fastq_to_fasta my_fastq.fq my_fasta.fasta
 ```
 
 # Installation
