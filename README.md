@@ -1,4 +1,4 @@
-# Prologue/Requirements
+# Requirements
 	- Linux
 	- Perl 5.x
 	- A computing cluster running LSF if you plan to run the Needleman-Wunsch pairwise alignments.
