@@ -88,12 +88,3 @@ and compiled using: `./configure --prefix=~/local/emboss --disable-shared --with
 
 # Help/suggestions
 	<p.oscar.franzen@gmail.com>
-
-
-# Epilogue
-	            "Där hänger på boklådsfönstret
-                   en tunnklädd liten bok.
-               Det är ett urtaget hjärta
-                   som dinglar där på sin krok."
-
-                        - A. Strindberg
