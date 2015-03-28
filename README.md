@@ -29,6 +29,9 @@ for example using the 'fastq_to_fasta' script:
 3. Decide if you want to compute distances based on Needleman-Wunsch or Infernal. The latter will
    be substantially faster.
 
+   First time executed, `oclust_pipeline.pl` will download the human genome sequence and
+   format it.
+
    ```
    $ ./oclust_pipeline.pl -x <method> -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
 

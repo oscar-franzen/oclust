@@ -399,6 +399,9 @@ if ($human eq "Y") {
 
 		my $cmd = "formatdb -pF -i $cwd" . "db/hg19.fa";
 		`$cmd`;
+
+		my $cmd = "rm $cwd" . "formatdb.log";
+		`$cmd`;
 	}
 
 	print("Screening for human contamination. This may take a while.\n");
