@@ -18,9 +18,12 @@ for example using the 'fastq_to_fasta' script:
    `$ git clone https://github.com/oscar-franzen/oclust.git`
 
 2. Make executable (might not be necessary):
-   $ chmod +x oclust_pipeline.pl oclust_finalize.pl
+
+   `$ chmod +x oclust_pipeline.pl oclust_finalize.pl`
+
 3. Run the first step in the pipeline:
-	$ cd oclust
+
+	`$ cd oclust
 	$ ./oclust_pipeline.pl -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
 
     General settings:
@@ -40,8 +43,8 @@ for example using the 'fastq_to_fasta' script:
     -lsf_account [string]      Name of the account to use (might not be necessary).
     -lsf_time [integer]        Runtime hours per job specified as number of hours (default=12).
     -lsf_memory [integer]      Requested amount of RAM in MB (default=20000).
-    -lsf_nb_jobs [integer]     Number of jobs (default=20).
-```
+    -lsf_nb_jobs [integer]     Number of jobs (default=20).`
+    
 5. Run the last step in the pipeline:
 ```
     $ ./oclust_finalize.pl -i <input directory>
