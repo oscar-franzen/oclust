@@ -25,24 +25,24 @@ for example using the 'fastq_to_fasta' script:
 
    ```$ ./oclust_pipeline.pl -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
 
-    General settings:
-    -f [string]                Input fasta file.
-    -o [string]                Name of output directory (must not exist) and use full path.
-    -R hmm (default) or BLAST  Method to use for reverse complementing sequences
-    -p [integer; default=4]    If -R is BLAST: Number of processor cores to use
-    -minl [integer]            Minimum sequence length (optional).
-    -maxl [integer]            Maximum sequence length (optional).
-    -rand [integer]            Sample a specified number of random sequencing reads (optional).
-    -human [boolean]           Can be Y or N. If 'Y'es, then execute BLAST-based contamination
-                               screen towards the human genome (default=Y; recommended but slow).
-    -chimera [boolean]         Run chimera check. Can be Y or N (default=Y).
+   General settings:
+   -f [string]                Input fasta file.
+   -o [string]                Name of output directory (must not exist) and use full path.
+   -R hmm (default) or BLAST  Method to use for reverse complementing sequences
+   -p [integer; default=4]    If -R is BLAST: Number of processor cores to use
+   -minl [integer]            Minimum sequence length (optional).
+   -maxl [integer]            Maximum sequence length (optional).
+   -rand [integer]            Sample a specified number of random sequencing reads (optional).
+   -human [boolean]           Can be Y or N. If 'Y'es, then execute BLAST-based contamination
+                              screen towards the human genome (default=Y; recommended but slow).
+   -chimera [boolean]         Run chimera check. Can be Y or N (default=Y).
 
-    LSF settings:
-    -lsf_queue [string]        Name of the LSF queue to use (default=scavenger).
-    -lsf_account [string]      Name of the account to use (might not be necessary).
-    -lsf_time [integer]        Runtime hours per job specified as number of hours (default=12).
-    -lsf_memory [integer]      Requested amount of RAM in MB (default=20000).
-    -lsf_nb_jobs [integer]     Number of jobs (default=20).
+   LSF settings:
+   -lsf_queue [string]        Name of the LSF queue to use (default=scavenger).
+   -lsf_account [string]      Name of the account to use (might not be necessary).
+   -lsf_time [integer]        Runtime hours per job specified as number of hours (default=12).
+   -lsf_memory [integer]      Requested amount of RAM in MB (default=20000).
+   -lsf_nb_jobs [integer]     Number of jobs (default=20).
    ```
 
 5. Run the last step in the pipeline:
