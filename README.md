@@ -19,8 +19,10 @@ for example using the 'fastq_to_fasta' script:
 
 2. Make executable (might not be necessary):
 
-   `cd oclust`
-   `$ chmod +x oclust_pipeline.pl oclust_finalize.pl`
+   ```
+   $ cd oclust
+   $ chmod +x *.pl
+   ```
 
 3. Run the first step in the pipeline:
 
