@@ -1,8 +1,7 @@
 #!/usr/bin/perl
-
-###################################################################
-# Oscar Franzen, <p.oscar.franzen@gmail.com>, Mt. Sinai, NY, USA. #
-###################################################################
+# oclust, a pipeline for clustering long PacBio CCS reads into operational taxonomic units.
+# Oscar Franzen, <p.oscar.franzen@gmail.com>, Mt. Sinai, NY, USA.
+# -----------------------------------------------------------------------------------------
 
 use strict 'vars';
 use Getopt::Long;
