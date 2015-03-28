@@ -53,25 +53,29 @@ if (! -e "$cwd/bin/hmmscan") {
 	print("Error: hmmscan binary not found.\n\n"); exit;
 }
 
-die("oclust is running on $Config{osname} ($Config{archname})\nAuthor: Oscar Franzén <p.oscar.franzen\@gmail.com>, Mt. Sinai, New York\n\nCommand line arguments:
+die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.oscar.franzen\@gmail.com>, Mount Sinai, New York, U.S.A.\n\nCommand line arguments:
 
- -x [method]\t\tCan be NW (Needleman-Wunsch) or MSA (Infernal)
- -f [input fasta file]\t\tFile containing sequencing reads in FASTA format
- -o [directory name]\t\tName of output directory (must not exist)
- -R hmm (default) or BLAST\tMethod to use for reverse complementing sequences
- -p [integer; default=4]\tIf -R is BLAST: Number of processor cores to use
- -minl [integer]\t\tMinimum sequence length to consider (in base pairs)
- -maxl [integer]\t\tMaximum sequence length to consider (in base pairs)
- -rand [integer]\t\tRandomly sample a specified number of sequencing reads (optional)
- -human [boolean]\t\tRun contamination screen against the human genome (default=Y)
- -chimera [boolean]\t\tRun chimera detection (default=Y)
+	-x <method> -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
 
- LSF settings:
- -lsf_queue [string]\t\tName of the LSF queue to use (default=scavenger)
- -lsf_account [string]\t\tName of the account to use (might not be necessary)
- -lsf_time [integer]\t\tRuntime hours per job specified as number of hours (default=12)
- -lsf_memory [integer]\t\tRequested amount of RAM in MB (default=20000)
- -lsf_nb_jobs [integer]\t\tNumber of jobs (default=20)
+	General settings:
+	-x NW or MSA               Can be NW for Needleman-Wunsch or MSA for Infernal. [MSA]
+	-f [string]                Input fasta file.
+	-o [string]                Name of output directory (must not exist) and use full path.
+	-R HMM, BLAST, or none     Method to use for reverse complementing sequences. [HMM]
+	-p [integer]               If -R is BLAST: Number of processor cores to use. [4]
+	-minl [integer]            Minimum sequence length. [optional]
+	-maxl [integer]            Maximum sequence length. [optional]
+	-rand [integer]            Randomly sample a specified number of sequences. [optional]
+	-human Y or N              If 'Y'es, then execute BLAST-based contamination
+	                           screen towards the human genome. [Y]
+	-chimera Y or N            Run chimera check. Can be Y or N. [Y]
+
+	LSF settings:
+	-lsf_queue [string]        Name of the LSF queue to use [scavenger].
+	-lsf_account [string]      Name of the account to use.
+	-lsf_time [integer]        Runtime hours per job specified as number of hours. [12]
+	-lsf_memory [integer]      Requested amount of RAM in MB. [20000]
+	-lsf_nb_jobs [integer]     Number of jobs. [20]
 
 	Usage example: -f /home/foobar/long_reads.fasta -o /home/foobar/foo -p 4 -minl 700 -maxl 800\n\n") if (@ARGV == 0);
 
@@ -162,7 +166,11 @@ if ($opt_f !~ /^\//) {
 }
 
 if ($revcom_method eq "") {
-	$revcom_method = "hmm";
+	$revcom_method = "HMM";
+}
+
+if ($revcom_method ne "HMM" && $revcom_method ne "BLAST" && $revcom_method ne "none") {
+	print("-R can be HMM, BLAST or none\n"); exit;
 }
 
 $distance = "MSA" if ($distance eq "");
@@ -268,7 +276,7 @@ else {
 # Reverse complement reads
 ################################################################################
 
-if ($revcom_method eq "blast") {
+if ($revcom_method eq "BLAST") {
 	`$cwd/bin/formatdb -pF -i $cwd/db/gg_13_5_99.20000.fasta`;
 	`rm formatdb.log`;
 
@@ -312,7 +320,7 @@ if ($revcom_method eq "blast") {
 		$os->write_seq($foo);
 	}
 }
-elsif ($revcom_method eq "hmm") {
+elsif ($revcom_method eq "HMM") {
 	$ENV{PATH} = $cwd . "/bin/:" . $ENV{PATH};
 
 	my $cmd = "$cwd/bin/vrevcomp/vrevcomp.pl -t $opt_o/ -h $cwd/bin/vrevcomp/HMMs/SSU/bacteria/ -c $opt_o" . "/vrevcomp.csv -o $opt_o/" . "vrevcomp.fa $opt_o/targets.ss.fa";
@@ -355,18 +363,45 @@ elsif ($revcom_method eq "hmm") {
 
 	print("Done orienting\n");
 }
-else {
-	die("The -R has an invalid choice\n");
-}
 
 # Screen for human contamination
 ################################################################################
 if ($human eq "Y") {
-	print("Screening for human contamination. Please be patient. This is going to take a while.\n");
-
 	if ($debug ne "") {
 		print("Debug: ./bin/megablast -a $opt_p -d $cwd/db/hg19.fa -m 8 -i $opt_o/targets.ss.F.fa -o $opt_o/blast_targets.hg19.out -v 10 -b 10 -e 1e-5 -F F\n");
 	}
+
+	# First check if it's needed to download the human genome
+	my $hg_path = $cwd . "/db/hg19.fa";
+
+	if ( ! -e $hg_path) {
+		print("Downloading the human genome sequence.\n");
+
+		my $cmd = "wget -P " . $cwd . "db --timestamping 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/chromosomes/chr*' 2>/dev/null >/dev/null";
+		`$cmd`;
+
+		my @files = <$cwd/db/*.gz>;
+
+		foreach my $file (@files) {
+			print("Decompressing: $file\n");
+			`gunzip $file`;
+		}
+
+		print("Merging.\n");
+
+		my $cmd = "cat $cwd" . "db/chr*.fa > $cwd" . "db/hg19.fa";
+		`$cmd`;
+
+		my $cmd = "rm -rf $cwd"."db/chr*.fa";
+		`$cmd`;
+
+		print("Formating database.\n");
+
+		my $cmd = "formatdb -pF -i $cwd" . "db/hg19.fa";
+		`$cmd`;
+	}
+
+	print("Screening for human contamination. This may take a while.\n");
 
 	`$cwd/bin/megablast -a $opt_p -d $cwd/db/hg19.fa -m 8 -i $opt_o/targets.ss.F.fa -o $opt_o/blast_targets.hg19.out -v 10 -b 10 -e 1e-5 -F F`;
 

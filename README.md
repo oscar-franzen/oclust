@@ -36,7 +36,7 @@ for example using the 'fastq_to_fasta' script:
    -x NW or MSA               Can be NW for Needleman-Wunsch or MSA for Infernal. [MSA]
    -f [string]                Input fasta file.
    -o [string]                Name of output directory (must not exist) and use full path.
-   -R hmm or BLAST            Method to use for reverse complementing sequences. [hmm]
+   -R HMM, BLAST, or none     Method to use for reverse complementing sequences. [HMM]
    -p [integer]               If -R is BLAST: Number of processor cores to use. [4]
    -minl [integer]            Minimum sequence length. [optional]
    -maxl [integer]            Maximum sequence length. [optional]
