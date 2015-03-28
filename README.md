@@ -1,20 +1,16 @@
 # Prologue/Requirements
 	- Linux.
 	- Perl 5.x.
-	- A computing cluster running LSF.
-	- Patience.
-
-
-# Why is the repository ~700 Mb?
-This is mainly caused by the BLAST-indexed human genome (hg19) used for contamination screening.
-
+	- A computing cluster running LSF if you plan to run the Needleman-Wunsch pairwise alignments.
 
 # Input files
 The only input file to oclust is a file in FASTA format containing the sequencing reads to be
-analyzed. There is no support for FASTQ format, etc. If your data is in FASTQ, convert to FASTA
+clustered. There is no support for FASTQ format, etc. If your data is in FASTQ, you can to FASTA
 for example using the 'fastq_to_fasta' script:
 
+```
 	$ fastq_to_fasta my_fastq.fq my_fasta.fa
+```
 
 
 # Installation
