@@ -47,21 +47,18 @@ for example using the 'fastq_to_fasta' script:
    ```
 
 5. Run the last step in the pipeline:
-```
-    $ ./oclust_finalize.pl -i <input directory>
 
-    Settings:
-    -i [string]                  Name of the output directory of `oclust_pipeline.pl'.
-    -a [clustering algorithm]    Can be one of: complete, average, or single (default=complete).
-```
-6. If step 5 fails this is likely due to insufficient memory on the node. Try requesting more
-   memory and run it again.
+   ```
+   $ ./oclust_finalize.pl -i <input directory>
 
-7. If everything went fine there should now be files with the extension `hclust' in the specified
-   directory. These files are space-delimited and contain two columns (with header). The first column
-   contains the identifier of the sequencing read and the second column contains the OTU (cluster)
-   designation. Clustering is performed on four distances (0.01 to 0.04). If other distances are
-   desired this can be achieved by modifying `hclust.R' in the `utils' directory.
+   Settings:
+   -i [string]                  Name of the output directory of `oclust_pipeline.pl'.
+   -a [clustering algorithm]    Can be one of: complete, average, or single (default=complete).
+   ```
+
+6. If step 5 fails this is likely due to insufficient memory on the node. Try requesting more memory and run it again.
+
+7. If everything went fine there should now be files with the extension `hclust' in the specified directory. These files are space-delimited and contain two columns (with header). The first column contains the identifier of the sequencing read and the second column contains the OTU (cluster) designation. Clustering is performed on four distances (0.01 to 0.04). If other distances are desired this can be achieved by modifying `hclust.R' in the `utils' directory.
 
 
 # Acknowledgements/Dependencies
