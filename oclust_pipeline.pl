@@ -28,13 +28,6 @@ sub workaround {
 use lib workaround(); # path to bioperl
 use Bio::SeqIO;
 
-# In this system equipped with LSF?
-my $init = `bsub -V 2>&1`;
-
-if ($init eq "") {
-	print("This system is not supported. oclust can only run on a cluster environment equipped with the LSF scheduler.\n\n"); exit;
-}
-
 # Can we find the binaries?
 if (! -e "$cwd/bin/blastall") {
 	print("Error: blastall binary not found.\n\n"); exit;
@@ -62,6 +55,7 @@ if (! -e "$cwd/bin/hmmscan") {
 
 die("oclust is running on $Config{osname} ($Config{archname})\nAuthor: Oscar Franzén <p.oscar.franzen\@gmail.com>, Mt. Sinai, New York\n\nCommand line arguments:
 
+ -x [method]\t\tCan be NW (Needleman-Wunsch) or MSA (Infernal)
  -f [input fasta file]\t\tFile containing sequencing reads in FASTA format
  -o [directory name]\t\tName of output directory (must not exist)
  -R hmm (default) or BLAST\tMethod to use for reverse complementing sequences
@@ -91,6 +85,7 @@ my $random_subset;
 my $human;
 my $chimera;
 my $revcom_method;
+my $distance;
 
 my $lsf_nb_jobs;
 my $lsf_queue;
@@ -113,7 +108,8 @@ GetOptions ("file=s" => \$opt_f,
 	         "lsf_time=i" => \$lsf_time,
 	         "lsf_memory=i" => \$lsf_memory,
 	         "lsf_account=s" => \$lsf_account,
-	         "R=s" => \$revcom_method) or die("Error in command line arguments\n");
+	         "R=s" => \$revcom_method,
+	         "x=s" => \$distance) or die("Error in command line arguments\n");
 
 if ($opt_f eq "") {
 	print("Error: No fasta input file specified\n"); exit;
@@ -167,6 +163,21 @@ if ($opt_f !~ /^\//) {
 
 if ($revcom_method eq "") {
 	$revcom_method = "hmm";
+}
+
+$distance = "MSA" if ($distance eq "");
+
+if ($distance ne "MSA" && $distance ne "NW") {
+	print("-x flag is invalid\n"); exit;
+}
+
+if ($distance eq "NW") {
+	# In this system equipped with LSF?
+	my $init = `bsub -V 2>&1`;
+
+	if ($init eq "") {
+		print("This system is not supported. oclust can only run on a cluster environment equipped with the LSF scheduler.\n\n"); exit;
+	}
 }
 
 # Is this a fasta file?

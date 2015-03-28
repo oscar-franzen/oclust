@@ -1,7 +1,7 @@
 # Requirements
-	- Linux
-	- Perl 5.x
-	- A computing cluster running LSF if you plan to run the Needleman-Wunsch pairwise alignments.
+* Linux
+* Perl 5.x
+* A computing cluster running LSF if you plan to run the Needleman-Wunsch pairwise alignments.
 
 # Input files
 The only input file to oclust is a file in FASTA format containing the sequencing reads to be
@@ -9,7 +9,8 @@ clustered. There is no support for FASTQ format, etc. If your data is in FASTQ, 
 for example using the 'fastq_to_fasta' script:
 
 ```
-	$ fastq_to_fasta my_fastq.fq my_fasta.fa
+   $ chmod +x fastq_to_fasta
+	$ fastq_to_fasta my_fastq.fq my_fasta.fasta
 ```
 
 # Installation
@@ -31,7 +32,7 @@ for example using the 'fastq_to_fasta' script:
    $ ./oclust_pipeline.pl -d <method> -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
 
    General settings:
-   -d                         Can be NW for Needleman-Wunsch or MSA for Infernal. [MSA]
+   -x                         Can be NW for Needleman-Wunsch or MSA for Infernal. [MSA]
    -f [string]                Input fasta file.
    -o [string]                Name of output directory (must not exist) and use full path.
    -R hmm (default) or BLAST  Method to use for reverse complementing sequences
