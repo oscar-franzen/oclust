@@ -14,9 +14,9 @@ for example using the 'fastq_to_fasta' script:
 
 # Installation
 1. Get the repository:
-   ```
+```
    $ git clone https://github.com/oscar-franzen/oclust.git
-   ```
+```
 2. Make executable (might not be necessary):
 ```
 $ chmod +x oclust_pipeline.pl oclust_finalize.pl
