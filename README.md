@@ -74,17 +74,17 @@ for example using the 'fastq_to_fasta' script:
 # Acknowledgements/Dependencies
 The pipeline consists of the following components:
 
-      * EMBOSS, version 6.6.0 was downloaded from ftp://emboss.open-bio.org/pub/EMBOSS/EMBOSS-6.6.0.tar.gz,
-      and compiled using: `./configure --prefix=~/local/emboss --disable-shared --without-mysql'.
-      * R, compiled with: `./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no'.
-      * Perl.
-      * BioPerl.
-      * NCBI BLAST.
-      * amos.
-      * uchime (public domain version).
-      * hmmer (hmmscan)
-      * vrevcomp
-      * The brewers of good beer.
+> EMBOSS, version 6.6.0 was downloaded from ftp://emboss.open-bio.org/pub/EMBOSS/EMBOSS-6.6.0.tar.gz,
+and compiled using: `./configure --prefix=~/local/emboss --disable-shared --without-mysql'.
+> R, compiled with: `./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no'.
+> Perl.
+> BioPerl.
+> NCBI BLAST.
+> amos.
+> uchime (public domain version).
+> hmmer (hmmscan)
+> vrevcomp
+> The brewers of good beer.
 
 # Help/suggestions
 	<p.oscar.franzen@gmail.com>
