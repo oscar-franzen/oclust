@@ -71,7 +71,7 @@ for example using the 'fastq_to_fasta' script:
 6. If everything went fine there should now be files with the extension `hclust` in the specified directory. These files are space-delimited and contain two columns (with header). The first column contains the identifier of the sequencing read and the second column contains the OTU (cluster) designation. Clustering is performed on four distances (0.01 to 0.04). If other distances are desired this can be achieved by modifying `hclust.R` in the `utils` directory.
 
 # Dependencies
-The oclust pipeline glues together the following open source components:
+The oclust pipeline glues together the following open source/public domain components:
 
 * EMBOSS, version 6.6.0 was downloaded from ftp://emboss.open-bio.org/pub/EMBOSS/EMBOSS-6.6.0.tar.gz,
 and compiled using: `./configure --prefix=~/local/emboss --disable-shared --without-mysql`.
