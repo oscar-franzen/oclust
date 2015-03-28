@@ -1,5 +1,3 @@
-test
-
 # Prologue/Requirements
 	- Linux.
 	- Perl 5.x.
@@ -7,13 +5,11 @@ test
 	- Patience.
 
 
-Why is the repository ~700 Mb?
-==============================
+# Why is the repository ~700 Mb?
 This is mainly caused by the BLAST-indexed human genome (hg19) used for contamination screening.
 
 
-Input files
-===========
+# Input files
 The only input file to oclust is a file in FASTA format containing the sequencing reads to be
 analyzed. There is no support for FASTQ format, etc. If your data is in FASTQ, convert to FASTA
 for example using the 'fastq_to_fasta' script:
@@ -21,8 +17,7 @@ for example using the 'fastq_to_fasta' script:
 	$ fastq_to_fasta my_fastq.fq my_fasta.fa
 
 
-Installation
-============
+# Installation
 1. Get the repository:
 	$ git clone https://p.oscar.franzen@code.google.com/p/oclust/
 
@@ -72,8 +67,7 @@ Installation
    desired this can be achieved by modifying `hclust.R' in the `utils' directory.
 
 
-Acknowledgements/Dependencies
-=============================
+# Acknowledgements/Dependencies
 The pipeline consists of the following components:
 
       * EMBOSS, version 6.6.0 was downloaded from ftp://emboss.open-bio.org/pub/EMBOSS/EMBOSS-6.6.0.tar.gz,
@@ -88,13 +82,11 @@ The pipeline consists of the following components:
       * vrevcomp
       * The brewers of good beer.
 
-Help/suggestions
-================
+# Help/suggestions
 	<p.oscar.franzen@gmail.com>
 
 
-Epilogue
-========
+# Epilogue
 	            "Där hänger på boklådsfönstret
                    en tunnklädd liten bok.
                Det är ett urtaget hjärta
