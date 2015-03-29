@@ -593,9 +593,10 @@ else {
 
 	if (! -d $dir_path) {
 		print("");
-		my $cmd = "unzip $cwd" . "bin/RDPinfernalTraindata.zip";
+		my $cmd = "unzip -d $cwd" . "bin $cwd" . "bin/RDPinfernalTraindata.zip";
 		`$cmd`;
 	}
+
 	else {
 		print("$dir_path yes\n");
 	}
