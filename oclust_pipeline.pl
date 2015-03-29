@@ -65,7 +65,7 @@ die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.osca
 	-maxl [integer]            Maximum sequence length. [optional]
 	-rand [integer]            Randomly sample a specified number of sequences. [optional]
 	-human Y or N              If 'Y'es, then execute BLAST-based contamination
-	                          screen towards the human genome. [Y]
+	                           screen towards the human genome. [Y]
 	-chimera Y or N            Run chimera check. Can be Y or N. [Y]
 
 	LSF settings (only valid for -x NW):
@@ -583,4 +583,7 @@ if ($distance eq "NW") {
 }
 else {
 	# Infernal-based
+	# $opt_o/targets.ss.FF.C.fa
+
+	my $cmd = "";
 }
