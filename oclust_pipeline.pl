@@ -597,11 +597,14 @@ else {
 		`$cmd`;
 	}
 
-	else {
-		print("$dir_path yes\n");
-	}
+	my $f = $cwd . "bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk.cm";
 
-	print("$dir_path\n");
+	if (! -e $f) {
+		print("Running cmbuild.\n");
+		my $cmd = $cwd . "bin/cmbuild --ere 1.4 $cwd"."bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk.cm $cwd"."bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk";
+
+		`$cmd`;
+	}
 
 	# Infernal-based
 	# $opt_o/targets.ss.FF.C.fa
