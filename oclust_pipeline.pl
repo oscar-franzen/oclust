@@ -361,6 +361,10 @@ elsif ($revcom_method eq "HMM") {
 
 	print("Done orienting\n");
 }
+else {
+	my $cmd = "cp -v $opt_o/targets.ss.fa $opt_o/targets.ss.F.fa";
+	`$cmd`;
+}
 
 # Screen for human contamination
 ################################################################################
@@ -438,6 +442,8 @@ else {
 # Chimera detection
 ################################################################################
 if ($chimera eq "Y") {
+	print("!\n");
+
 	print("Running chimera check.\n");
 
 	`$cwd/bin/uchime4.2.40_i86linux32 --minh 1.0 --quiet --db $cwd/db/gold.fa --input $opt_o/targets.ss.FF.fa --uchimeout $opt_o/targets.ss.FF.fa.uchime`;
@@ -582,8 +588,22 @@ if ($distance eq "NW") {
 	close(fh);
 }
 else {
+	# Build the covariance model
+	my $dir_path = "$cwd" . "/bin/RDPinfernalTraindata";
+
+	if (! -d $dir_path) {
+		print("");
+		my $cmd = "unzip $cwd" . "bin/RDPinfernalTraindata.zip";
+		`$cmd`;
+	}
+	else {
+		print("$dir_path yes\n");
+	}
+
+	print("$dir_path\n");
+
 	# Infernal-based
 	# $opt_o/targets.ss.FF.C.fa
 
-	my $cmd = "$cwd/bin/cmalign ";
+	#my $cmd = "$cwd/bin/cmalign ";
 }

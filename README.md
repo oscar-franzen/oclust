@@ -74,16 +74,15 @@ for example using the 'fastq_to_fasta' script:
 The oclust pipeline glues together the following open source/public domain components:
 
 * EMBOSS, version 6.6.0 was downloaded from ftp://emboss.open-bio.org/pub/EMBOSS/EMBOSS-6.6.0.tar.gz,
-and compiled using: `./configure --prefix=~/local/emboss --disable-shared --without-mysql`.
-* R, compiled with: `./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no`.
-* Perl.
-* BioPerl.
-* NCBI BLAST.
-* amos.
-* uchime (public domain version).
+and compiled using: `./configure --prefix=~/local/emboss --disable-shared --without-mysql`
+* R, compiled with: `./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no`
+* Perl and BioPerl
+* NCBI BLAST
+* uchime (public domain version)
 * hmmer (hmmscan)
 * vrevcomp
-* beer.
+* infernal
+* beer
 
 # Help/suggestions
 * p.oscar.franzen at gmail.com
