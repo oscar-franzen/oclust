@@ -40,7 +40,7 @@ for example using the 'fastq_to_fasta' script:
    -f [string]                Input fasta file.
    -o [string]                Name of output directory (must not exist) and use full path.
    -R HMM, BLAST, or none     Method to use for reverse complementing sequences. [HMM]
-   -p [integer]               If -R is BLAST: Number of processor cores to use. [4]
+   -p [integer]               Number of processor cores to use for -R BLAST and -x MSA. [4]
    -minl [integer]            Minimum sequence length. [optional]
    -maxl [integer]            Maximum sequence length. [optional]
    -rand [integer]            Randomly sample a specified number of sequences. [optional]
@@ -48,7 +48,7 @@ for example using the 'fastq_to_fasta' script:
                               screen towards the human genome. [Y]
    -chimera Y or N            Run chimera check. Can be Y or N. [Y]
 
-   LSF settings:
+   LSF settings (only valid for -x NW):
    -lsf_queue [string]        Name of the LSF queue to use [scavenger].
    -lsf_account [string]      Name of the account to use.
    -lsf_time [integer]        Runtime hours per job specified as number of hours. [12]

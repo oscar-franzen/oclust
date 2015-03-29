@@ -56,20 +56,19 @@ die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.osca
 
 	-x <method> -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
 
-	General settings:
 	-x NW or MSA               Can be NW for Needleman-Wunsch or MSA for Infernal. [MSA]
 	-f [string]                Input fasta file.
 	-o [string]                Name of output directory (must not exist) and use full path.
 	-R HMM, BLAST, or none     Method to use for reverse complementing sequences. [HMM]
-	-p [integer]               If -R is BLAST: Number of processor cores to use. [4]
+	-p [integer]               Number of processor cores to use for -R BLAST and -x MSA. [4]
 	-minl [integer]            Minimum sequence length. [optional]
 	-maxl [integer]            Maximum sequence length. [optional]
 	-rand [integer]            Randomly sample a specified number of sequences. [optional]
 	-human Y or N              If 'Y'es, then execute BLAST-based contamination
-	                           screen towards the human genome. [Y]
+	                          screen towards the human genome. [Y]
 	-chimera Y or N            Run chimera check. Can be Y or N. [Y]
 
-	LSF settings:
+	LSF settings (only valid for -x NW):
 	-lsf_queue [string]        Name of the LSF queue to use [scavenger].
 	-lsf_account [string]      Name of the account to use.
 	-lsf_time [integer]        Runtime hours per job specified as number of hours. [12]
@@ -503,79 +502,85 @@ else {
 
 # Write and launch job files
 ################################################################################
-my $total_sequence_count = `grep '>' $opt_o/targets.ss.FF.C.fa | wc -l`;
-chomp($total_sequence_count);
-my $total_job_file_count = ceil($total_sequence_count/$lsf_nb_jobs);
-my $cmd = $cwd . "utils/split_fasta_file.pl $opt_o/targets.ss.FF.C.fa $total_job_file_count";
+if ($distance eq "NW") {
+	my $total_sequence_count = `grep '>' $opt_o/targets.ss.FF.C.fa | wc -l`;
+	chomp($total_sequence_count);
 
-`$cmd`;
+	my $total_job_file_count = ceil($total_sequence_count/$lsf_nb_jobs);
+	my $cmd = $cwd . "utils/split_fasta_file.pl $opt_o/targets.ss.FF.C.fa $total_job_file_count";
 
-`mkdir $opt_o/jobs`;
-`mkdir $opt_o/logs`;
-`mkdir $opt_o/alignments`;
-`mkdir $opt_o/tmp`;
+	`$cmd`;
 
-my $db = $opt_o . "/targets.ss.FF.C.fa";
+	`mkdir $opt_o/jobs`;
+	`mkdir $opt_o/logs`;
+	`mkdir $opt_o/alignments`;
+	`mkdir $opt_o/tmp`;
 
-my @files = <$opt_o/*.fasta>;
-my $count = 0;
+	my $db = $opt_o . "/targets.ss.FF.C.fa";
 
-foreach my $file (@files) {
-	if (-s $file > 0) {
-		$count ++ ;
+	my @files = <$opt_o/*.fasta>;
+	my $count = 0;
 
-		my $job_script = "#BSUB -L /bin/bash
-#BSUB -n 1
-#BSUB -J oclust_".$count."
-#BSUB -oo ../logs/$count.log
-#BSUB -eo ../logs/$count.err
-#BSUB -q $lsf_queue
-#BSUB -R rusage[mem=$lsf_memory]
-#BSUB -W $lsf_time" . ":00\n";
+	foreach my $file (@files) {
+		if (-s $file > 0) {
+			$count ++ ;
 
-		if ($lsf_account ne "") {
-			$job_script .= "#BSUB -P $lsf_account\n";
+			my $job_script = "#BSUB -L /bin/bash
+	#BSUB -n 1
+	#BSUB -J oclust_".$count."
+	#BSUB -oo ../logs/$count.log
+	#BSUB -eo ../logs/$count.err
+	#BSUB -q $lsf_queue
+	#BSUB -R rusage[mem=$lsf_memory]
+	#BSUB -W $lsf_time" . ":00\n";
+
+			if ($lsf_account ne "") {
+				$job_script .= "#BSUB -P $lsf_account\n";
+			}
+
+			$job_script .= "cd $opt_o
+	$cwd";
+
+			$job_script .= "utils/needle_runner.pl $file $db $opt_o/alignments/$count" . ".needle.out $opt_o/tmp $count\n\n";
+
+			open(fh, ">".$opt_o."/jobs/$count".".job");
+			print(fh $job_script);
+			close(fh);
 		}
-
-		$job_script .= "cd $opt_o
-$cwd";
-
-		$job_script .= "utils/needle_runner.pl $file $db $opt_o/alignments/$count" . ".needle.out $opt_o/tmp $count\n\n";
-
-		open(fh, ">".$opt_o."/jobs/$count".".job");
-		print(fh $job_script);
-		close(fh);
 	}
+
+	print("Creating $count job file(s).\n");
+
+	# Submit jobs and record job identifiers so that we can track them
+	my @files = <$opt_o/jobs/*>;
+	my @ids;
+
+	foreach my $job (@files) {
+		my $cmd = "cd $opt_o/jobs";
+
+		$job =~ /^.+\/(\S+)$/;
+		my $fn = $1;
+
+		my $q = "$cmd; bsub < $fn";
+		my $out = `$q`;
+
+		$out =~ /^\S+ <(\S+)>/;
+		my $job_id = $1;
+
+		push(@ids, $job_id);
+
+		print("Submitted $job\n");
+	}
+
+	# Write running jobs
+	open(fh, ">" . $opt_o . "/submitted_jobs.txt");
+
+	foreach my $id (@ids) {
+		print(fh "$id\n");
+	}
+
+	close(fh);
 }
-
-print("Creating $count job file(s).\n");
-
-# Submit jobs and record job identifiers so that we can track them
-my @files = <$opt_o/jobs/*>;
-my @ids;
-
-foreach my $job (@files) {
-	my $cmd = "cd $opt_o/jobs";
-
-	$job =~ /^.+\/(\S+)$/;
-	my $fn = $1;
-
-	my $q = "$cmd; bsub < $fn";
-	my $out = `$q`;
-
-	$out =~ /^\S+ <(\S+)>/;
-	my $job_id = $1;
-
-	push(@ids, $job_id);
-
-	print("Submitted $job\n");
+else {
+	# Infernal-based
 }
-
-# Write running jobs
-open(fh, ">" . $opt_o . "/submitted_jobs.txt");
-
-foreach my $id (@ids) {
-	print(fh "$id\n");
-}
-
-close(fh);
