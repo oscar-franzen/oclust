@@ -585,5 +585,5 @@ else {
 	# Infernal-based
 	# $opt_o/targets.ss.FF.C.fa
 
-	my $cmd = "";
+	my $cmd = "$cwd/bin/cmalign ";
 }
