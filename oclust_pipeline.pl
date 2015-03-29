@@ -592,7 +592,6 @@ else {
 	my $dir_path = "$cwd" . "/bin/RDPinfernalTraindata";
 
 	if (! -d $dir_path) {
-		print("");
 		my $cmd = "unzip -d $cwd" . "bin $cwd" . "bin/RDPinfernalTraindata.zip";
 		`$cmd`;
 	}
@@ -607,7 +606,9 @@ else {
 	}
 
 	# Infernal-based
-	# $opt_o/targets.ss.FF.C.fa
+	print("Running cmalign.\n");
+	my $f = $opt_o . "/targets.ss.FF.C.fa";
+	my $cmd = $cwd."bin/cmalign --cpu $opt_p -o $opt_o" . "/infernal.sto $cwd" . "bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk.cm $f 2>/dev/null >/dev/null";
 
-	#my $cmd = "$cwd/bin/cmalign ";
+	`$cmd`;
 }
