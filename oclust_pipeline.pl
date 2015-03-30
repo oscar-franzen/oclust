@@ -653,10 +653,12 @@ else {
 	}
 
 	my $n = @alignments;
-	my $tot = $n * $n - 1;
+	$n -- ;
 
 	foreach my $index (keys(%res)) {
-		print("$index $res{$index}\n");
+		if ($res{$index} == 1) {
+			print("$index $res{$index} " . @alignments[$index]->display_id . "\n");
+		}
 	}
 
 	#my $out = Bio::AlignIO->new(-file => ">" . @ARGV[0] . ".fasta" , '-format' => 'fasta');
