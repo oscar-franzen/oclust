@@ -656,7 +656,7 @@ else {
 	$n -- ;
 
 	foreach my $index (keys(%res)) {
-		if ($res{$index} == 1) {
+		if ($res{$index} == $n) {
 			print("$index $res{$index} " . @alignments[$index]->display_id . "\n");
 		}
 	}
