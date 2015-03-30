@@ -623,18 +623,40 @@ else {
 		}
 	}
 
+	my %res;
+
 	for (my $i=0; $i<@alignments; $i++) {
 		my $seq1 = @alignments[$i];
 
 		for (my $k=0; $k<@alignments; $k++) {
 			if ($k != $i) {
 				my $seq2 = @alignments[$k];
+				my $str1 = $seq1->seq;
+				my $str2 = $seq2->seq;
 
-				print($seq1->seq . "\n");
-				print($seq2->seq . "\n");
-				<stdin>;
+				my $count = 0;
+
+				for (my $q=0; $q<length($str1); $q++) {
+					my $char1 = substr($str1, $q, 1);
+					my $char2 = substr($str2, $q, 1);
+
+					if ($char1 =~ /[ATGC]/i && $char2 =~ /[ATGC]/i) {
+						$count ++ ;
+					}
+				}
+
+				if ($count == 0) {
+					$res{$i} ++ ;
+				}
 			}
 		}
+	}
+
+	my $n = @alignments;
+	my $tot = $n * $n - 1;
+
+	foreach my $index (keys(%res)) {
+		print("$index $res{$index}\n");
 	}
 
 	#my $out = Bio::AlignIO->new(-file => ">" . @ARGV[0] . ".fasta" , '-format' => 'fasta');
