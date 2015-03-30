@@ -1,7 +1,7 @@
 # Requirements
 * Linux
 * Perl 5.x
-* A computing cluster running LSF if you plan to run the Needleman-Wunsch pairwise alignments.
+* A computing cluster running LSF if you plan to run the pairwise alignments.
 
 # Input files
 The only input file to oclust is a file in FASTA format containing the sequencing reads to be
@@ -81,7 +81,7 @@ The oclust pipeline bundles together the following open source/public domain pro
 * vrevcomp [http://www.microbiome.ch/web/Tools.html]
 * infernal [http://infernal.janelia.org/]
 * Ngila [http://scit.us/projects/ngila/]
-* beer
+* beer [http://en.wikipedia.org/wiki/India_Pale_Ale]
 
 # Help/suggestions
 * p.oscar.franzen at gmail.com
