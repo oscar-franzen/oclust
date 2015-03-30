@@ -26,6 +26,7 @@ sub workaround {
 
 use lib workaround(); # path to bioperl
 use Bio::SeqIO;
+use Bio::AlignIO;
 
 # Can we find the binaries?
 if (! -e "$cwd/bin/blastall") {
@@ -611,4 +612,16 @@ else {
 	my $cmd = $cwd."bin/cmalign --cpu $opt_p -o $opt_o" . "/infernal.sto $cwd" . "bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk.cm $f 2>/dev/null >/dev/null";
 
 	`$cmd`;
+
+	# Convert to fasta and remove sequences without any homologous positions
+	my $in  = Bio::AlignIO->new(-file => $opt_o."/infernal.sto", '-format' => 'stockholm');
+	my @alignments;
+
+	while ( my $aln = $in->next_aln() ) {
+		push(@alignments, $aln);
+	}
+
+	print(@alignments . "\n");
+
+	#my $out = Bio::AlignIO->new(-file => ">" . @ARGV[0] . ".fasta" , '-format' => 'fasta');
 }
