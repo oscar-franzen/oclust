@@ -504,7 +504,7 @@ if ($fs == 0) {
 	print("Error: No remaining sequences. Cannot continue.\n\n"); exit;
 }
 else {
-	print("Output files written to: $opt_o\n\n");
+	print("Output files will be written to: $opt_o\n\n");
 }
 
 # Write and launch job files
@@ -654,12 +654,22 @@ else {
 
 	my $n = @alignments;
 	$n -- ;
+	my %removal;
 
 	foreach my $index (keys(%res)) {
 		if ($res{$index} == $n) {
-			print("$index $res{$index} " . @alignments[$index]->display_id . "\n");
+			#print("$index $res{$index} " . @alignments[$index]->display_id . "\n");
+			$removal{@alignments[$index]->display_id} = 1;
 		}
 	}
 
-	#my $out = Bio::AlignIO->new(-file => ">" . @ARGV[0] . ".fasta" , '-format' => 'fasta');
+	my $os = Bio::SeqIO->new(-file => ">" . $opt_o . "/infernal.F.fasta", -format => "fasta");
+
+	print(keys(%removal) . " sequences removed\n");
+
+	foreach my $item (@alignments) {
+		if ($removal{$item->display_id} eq "") {
+			$os->write_seq($item);
+		}
+	}
 }
