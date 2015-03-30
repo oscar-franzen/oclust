@@ -614,14 +614,28 @@ else {
 	`$cmd`;
 
 	# Convert to fasta and remove sequences without any homologous positions
-	my $in  = Bio::AlignIO->new(-file => $opt_o."/infernal.sto", '-format' => 'stockholm');
+	my $in = Bio::AlignIO->new(-file => $opt_o."/infernal.sto", '-format' => 'stockholm');
 	my @alignments;
 
 	while ( my $aln = $in->next_aln() ) {
-		push(@alignments, $aln);
+		foreach my $seq ($aln->each_seq()) {
+			push(@alignments, $seq);
+		}
 	}
 
-	print(@alignments . "\n");
+	for (my $i=0; $i<@alignments; $i++) {
+		my $seq1 = @alignments[$i];
+
+		for (my $k=0; $k<@alignments; $k++) {
+			if ($k != $i) {
+				my $seq2 = @alignments[$k];
+
+				print($seq1->seq . "\n");
+				print($seq2->seq . "\n");
+				<stdin>;
+			}
+		}
+	}
 
 	#my $out = Bio::AlignIO->new(-file => ">" . @ARGV[0] . ".fasta" , '-format' => 'fasta');
 }
