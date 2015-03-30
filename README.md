@@ -71,17 +71,16 @@ for example using the 'fastq_to_fasta' script:
 6. If everything went fine there should now be files with the extension `hclust` in the specified directory. These files are space-delimited and contain two columns (with header). The first column contains the identifier of the sequencing read and the second column contains the OTU (cluster) designation. Clustering is performed on four distances (0.01 to 0.04). If other distances are desired this can be achieved by modifying `hclust.R` in the `utils` directory.
 
 # Dependencies
-The oclust pipeline glues together the following open source/public domain components:
+The oclust pipeline bundles together the following open source/public domain programs:
 
-* EMBOSS, version 6.6.0 was downloaded from ftp://emboss.open-bio.org/pub/EMBOSS/EMBOSS-6.6.0.tar.gz,
-and compiled using: `./configure --prefix=~/local/emboss --disable-shared --without-mysql`
-* R, compiled with: `./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no`
-* Perl and BioPerl
-* NCBI BLAST
-* uchime (public domain version)
-* hmmer (hmmscan)
-* vrevcomp
-* infernal
+* R [http://www.r-project.org], compiled with: `./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no`
+* Perl and BioPerl [http://www.bioperl.org]
+* NCBI BLAST [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/]
+* uchime (public domain version) [http://drive5.com/uchime/uchime_download.html]
+* HMMER (hmmscan) [http://hmmer.janelia.org/]
+* vrevcomp [http://www.microbiome.ch/web/Tools.html]
+* infernal [http://infernal.janelia.org/]
+* Ngila [http://scit.us/projects/ngila/]
 * beer
 
 # Help/suggestions
