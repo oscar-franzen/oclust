@@ -672,4 +672,17 @@ else {
 			$os->write_seq($item);
 		}
 	}
+
+	my $cmd = "cat $cwd/bin/R/bin/R";
+	my $o = `$cmd`;
+
+	$o =~ s/\/home\/foobar\/oclust\//$cwd/g;
+	$o =~ s/R_installed/R/g;
+
+	open(fh, ">" . $cwd."/bin/R/bin/R.fixed");
+	print(fh "$o\n");
+	close(fh);
+
+	my $cmd = "chmod +x $cwd/bin/R/bin/R.fixed";
+	`$cmd`;
 }
