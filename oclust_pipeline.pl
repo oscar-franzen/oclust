@@ -703,4 +703,6 @@ else {
 
 	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd $opt_o"."/infernal.F.fasta $opt_o $hclust_algorithm < $cwd/utils/hclust_fr_aln.R";
 	`$cmd`;
+
+	print("oclust running in MSA-mode has finished. Results are in:\n$opt_o\n");
 }
