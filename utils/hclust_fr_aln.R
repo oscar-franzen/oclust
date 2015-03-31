@@ -16,12 +16,20 @@ d<-dist.alignment(a,matrix="identity")
 m<-as.matrix(d)^2
 
 d<-as.dist(m)
+
+z<-as.matrix(d)
+
+# Workaround for NaN
+z[is.na(z)]=1
+d<-as.dist(z)
+
 hc<-hclust(d,method=args.algo)
 
 for (dist in c(0.005,1:10/100)) {
     cl<-cutree(hc,h=dist)
 
     df<-as.data.frame(cl)
-    colnames(df)<-c("read_ID","cluster")
-    write.table(, file=paste0(args.output_dir,"/MSA.",args.algo,".",dist,".hclust"), col.names=T, row.names=T, quote=F)
+    df<-data.frame(read_ID=rownames(df),cluster=df$cl)
+
+    write.table(df, file=paste0(args.output_dir,"/MSA.",args.algo,".",dist,".hclust"), col.names=T, row.names=F, quote=F)
 }
