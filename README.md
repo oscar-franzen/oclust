@@ -37,6 +37,8 @@ for example using the 'fastq_to_fasta' script:
 
    General settings:
    -x NW or MSA               Can be NW for Needleman-Wunsch or MSA for Infernal. [MSA]
+   -a complete, average or    The desired clustering algorithm. [complete]
+      single    
    -f [string]                Input fasta file.
    -o [string]                Name of output directory (must not exist) and use full path.
    -R HMM, BLAST, or none     Method to use for reverse complementing sequences. [HMM]
@@ -63,7 +65,6 @@ for example using the 'fastq_to_fasta' script:
 
    Settings:
    -i [string]                  Name of the output directory of `oclust_pipeline.pl'.
-   -a [clustering algorithm]    Can be one of: complete, average, or single. [complete]
    ```
 
 5. If step 5 fails this is likely due to insufficient memory on the node. Try requesting more memory and run it again.

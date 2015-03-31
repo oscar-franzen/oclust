@@ -57,7 +57,10 @@ die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.osca
 
 	-x <method> -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
 
+	General settings:
 	-x NW or MSA               Can be NW for Needleman-Wunsch or MSA for Infernal. [MSA]
+	-a complete, average or    The desired clustering algorithm. [complete]
+	   single    
 	-f [string]                Input fasta file.
 	-o [string]                Name of output directory (must not exist) and use full path.
 	-R HMM, BLAST, or none     Method to use for reverse complementing sequences. [HMM]
@@ -66,7 +69,7 @@ die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.osca
 	-maxl [integer]            Maximum sequence length. [optional]
 	-rand [integer]            Randomly sample a specified number of sequences. [optional]
 	-human Y or N              If 'Y'es, then execute BLAST-based contamination
-	                           screen towards the human genome. [Y]
+	                          screen towards the human genome. [Y]
 	-chimera Y or N            Run chimera check. Can be Y or N. [Y]
 
 	LSF settings (only valid for -x NW):
@@ -89,6 +92,7 @@ my $human;
 my $chimera;
 my $revcom_method;
 my $distance;
+my $hclust_algorithm;
 
 my $lsf_nb_jobs;
 my $lsf_queue;
@@ -112,7 +116,16 @@ GetOptions ("file=s" => \$opt_f,
 	         "lsf_memory=i" => \$lsf_memory,
 	         "lsf_account=s" => \$lsf_account,
 	         "R=s" => \$revcom_method,
-	         "x=s" => \$distance) or die("Error in command line arguments\n");
+	         "x=s" => \$distance,
+	         "algorithm=s" => \$hclust_algorithm) or die("Error in command line arguments\n");
+
+if ($hclust_algorithm eq "") {
+	$hclust_algorithm = "complete";
+}
+
+if ($hclust_algorithm ne "complete" && $hclust_algorithm ne "single" && $hclust_algorithm ne "average") {
+	print("-a can be one of: complete, single, or average\n"); exit;
+}
 
 if ($opt_f eq "") {
 	print("Error: No fasta input file specified\n"); exit;
@@ -688,6 +701,6 @@ else {
 	my $cmd = "chmod +x $cwd/bin/R/bin/R.fixed";
 	`$cmd`;
 
-	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd < $cwd/utils/hclust_fr_aln.R";
+	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd $opt_o"."/infernal.F.fasta $opt_o $hclust_algorithm < $cwd/utils/hclust_fr_aln.R";
 	`$cmd`;
 }
