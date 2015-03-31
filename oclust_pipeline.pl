@@ -623,6 +623,8 @@ else {
 		}
 	}
 
+	print("Checking alignment for consistency.\n");
+
 	my %res;
 
 	for (my $i=0; $i<@alignments; $i++) {
