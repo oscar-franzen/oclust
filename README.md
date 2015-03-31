@@ -74,6 +74,7 @@ for example using the 'fastq_to_fasta' script:
 The oclust pipeline bundles together the following open source/public domain programs:
 
 * R [http://www.r-project.org], compiled with: `./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no`
+* The seqinr R package [http://cran.r-project.org/web/packages/seqinr/]
 * Perl and BioPerl [http://www.bioperl.org]
 * NCBI BLAST [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/]
 * uchime (public domain version) [http://drive5.com/uchime/uchime_download.html]
