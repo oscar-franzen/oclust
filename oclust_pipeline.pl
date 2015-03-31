@@ -685,4 +685,7 @@ else {
 
 	my $cmd = "chmod +x $cwd/bin/R/bin/R.fixed";
 	`$cmd`;
+
+	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd < $cwd/utils/hclust_fr_aln.R";
+	`$cmd`;
 }
