@@ -1,4 +1,5 @@
 args <- commandArgs(trailingOnly = TRUE)
+
 args.working_dir <- args[1]
 args.input_file <- args[2]
 args.output_dir <- args[3]
@@ -15,9 +16,12 @@ d<-dist.alignment(a,matrix="identity")
 m<-as.matrix(d)^2
 
 d<-as.dist(m)
-hc<-hclust(d,method="complete")
+hc<-hclust(d,method=args.algo)
 
-for (dist in 1:10/100) {
+for (dist in c(0.005,1:10/100)) {
     cl<-cutree(hc,h=dist)
-    write.table(as.data.frame(cl), file=paste0("./infernal.hclust.out/",file,".",dist,".hclust"), row.names=T, quote=F)
+
+    df<-as.data.frame(cl)
+    colnames(df)<-c("read_ID","cluster")
+    write.table(, file=paste0(args.output_dir,"/MSA.",args.algo,".",dist,".hclust"), col.names=T, row.names=T, quote=F)
 }
