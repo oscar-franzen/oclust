@@ -73,14 +73,14 @@ die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.osca
 	                            screen towards the human genome. [Y]
 	-chimera Y or N            Run chimera check. Can be Y or N. [Y]
 
-	LSF settings (only valid for -x NW):
+	LSF settings (only valid for -x PW):
 	-lsf_queue [string]        Name of the LSF queue to use [scavenger].
 	-lsf_account [string]      Name of the account to use.
 	-lsf_time [integer]        Runtime hours per job specified as number of hours. [12]
 	-lsf_memory [integer]      Requested amount of RAM in MB. [20000]
 	-lsf_nb_jobs [integer]     Number of jobs. [20]
 
-	Usage example: -f /home/foobar/long_reads.fasta -o /home/foobar/foo -p 4 -minl 700 -maxl 800\n\n") if (@ARGV == 0);
+	Usage example: -x MSA -f /home/foobar/long_reads.fasta -o /home/foobar/foo -p 4 -minl 700 -maxl 800\n\n") if (@ARGV == 0);
 
 my $opt_f;
 my $opt_o;
