@@ -37,7 +37,7 @@ for example using the 'fastq_to_fasta' script:
 
    General settings:
    -x PW or MSA               Can be PW for pairwise alignments (based on Ngila)
-                              or MSA (based on Infernal). [MSA]
+                               or MSA (based on Infernal). [MSA]
    -a complete, average or    The desired clustering algorithm. [complete]
       single    
    -f [string]                Input fasta file.
@@ -48,7 +48,7 @@ for example using the 'fastq_to_fasta' script:
    -maxl [integer]            Maximum sequence length. [optional]
    -rand [integer]            Randomly sample a specified number of sequences. [optional]
    -human Y or N              If 'Y'es, then execute BLAST-based contamination
-                              screen towards the human genome. [Y]
+                               screen towards the human genome. [Y]
    -chimera Y or N            Run chimera check. Can be Y or N. [Y]
 
    LSF settings (only valid for -x NW):
