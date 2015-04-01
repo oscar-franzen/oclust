@@ -55,7 +55,7 @@ if (! -e "$cwd/bin/hmmscan") {
 
 die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.oscar.franzen\@gmail.com>, Mount Sinai, New York, U.S.A.\n\nCommand line arguments:
 
-	-x <method> -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
+	-x <method> -f <input fasta file> -o <output directory> -p 1
 
 	General settings:
 	-x PW or MSA               Can be PW for pairwise alignments (based on Ngila)
@@ -66,20 +66,13 @@ die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.osca
 	-f [string]                Input fasta file.
 	-o [string]                Name of output directory (must not exist) and use full path.
 	-R HMM, BLAST, or none     Method to use for reverse complementing sequences. [HMM]
-	-p [integer]               Number of processor cores to use for -R BLAST and -x MSA. [4]
+	-p [integer]               Number of processor cores to use. [4]
 	-minl [integer]            Minimum sequence length. [optional]
 	-maxl [integer]            Maximum sequence length. [optional]
 	-rand [integer]            Randomly sample a specified number of sequences. [optional]
 	-human Y or N              If 'Y'es, then execute BLAST-based contamination
 	                           screen towards the human genome. [Y]
 	-chimera Y or N            Run chimera check. Can be Y or N. [Y]
-
-	LSF settings (only valid for -x PW):
-	-lsf_queue [string]        Name of the LSF queue to use [scavenger].
-	-lsf_account [string]      Name of the account to use.
-	-lsf_time [integer]        Runtime hours per job specified as number of hours. [12]
-	-lsf_memory [integer]      Requested amount of RAM in MB. [20000]
-	-lsf_nb_jobs [integer]     Number of jobs. [20]
 
 	Usage example: -x MSA -f /home/foobar/long_reads.fasta -o /home/foobar/foo -p 4 -minl 700 -maxl 800\n\n") if (@ARGV == 0);
 
@@ -189,17 +182,17 @@ if ($revcom_method ne "HMM" && $revcom_method ne "BLAST" && $revcom_method ne "n
 
 $distance = "MSA" if ($distance eq "");
 
-if ($distance ne "MSA" && $distance ne "NW") {
-	print("-x flag is invalid\n"); exit;
+if ($distance ne "MSA" && $distance ne "PW") {
+	print("-x must be PW or MSA.\n"); exit;
 }
 
-if ($distance eq "NW") {
+if ($distance eq "PW") {
 	# In this system equipped with LSF?
-	my $init = `bsub -V 2>&1`;
+	#my $init = `bsub -V 2>&1`;
 
-	if ($init eq "") {
-		print("This system is not supported. oclust can only run on a cluster environment equipped with the LSF scheduler.\n\n"); exit;
-	}
+	#if ($init eq "") {
+	#	print("This system is not supported. oclust can only run on a cluster environment equipped with the LSF scheduler.\n\n"); exit;
+	#}
 }
 
 # Is this a fasta file?
