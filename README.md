@@ -36,7 +36,8 @@ for example using the 'fastq_to_fasta' script:
    $ ./oclust_pipeline.pl -x <method> -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
 
    General settings:
-   -x NW or MSA               Can be NW for Needleman-Wunsch or MSA for Infernal. [MSA]
+   -x PW or MSA               Can be PW for pairwise alignments (based on Ngila)
+                              or MSA (based on Infernal). [MSA]
    -a complete, average or    The desired clustering algorithm. [complete]
       single    
    -f [string]                Input fasta file.
