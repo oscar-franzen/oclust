@@ -37,7 +37,8 @@ for example using the 'fastq_to_fasta' script:
 
    General settings:
    -x PW or MSA               Can be PW for pairwise alignments (based on Ngila)
-                               or MSA (based on Infernal). [MSA]
+                               or MSA for multiple sequence alignment (based on
+                               Infernal). [MSA]
    -a complete, average or    The desired clustering algorithm. [complete]
       single    
    -f [string]                Input fasta file.
