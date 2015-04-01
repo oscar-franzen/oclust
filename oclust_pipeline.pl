@@ -89,11 +89,11 @@ my $revcom_method;
 my $distance;
 my $hclust_algorithm;
 
-my $lsf_nb_jobs;
-my $lsf_queue;
-my $lsf_time;
-my $lsf_memory;
-my $lsf_account;
+#my $lsf_nb_jobs;
+#my $lsf_queue;
+#my $lsf_time;
+#my $lsf_memory;
+#my $lsf_account;
 
 GetOptions ("file=s" => \$opt_f,
 	         "out=s" => \$opt_o,
@@ -104,12 +104,12 @@ GetOptions ("file=s" => \$opt_f,
 	         "rand=i" => \$random_subset,
 	         "human=s" => \$human,
 	         "chimera=s" => \$chimera,
-	         "lsf_nb_jobs=i" => \$lsf_nb_jobs,
-	         "lsf_queue=s" => \$lsf_queue,
-	         "lsf_account=s" => \$lsf_account,
-	         "lsf_time=i" => \$lsf_time,
-	         "lsf_memory=i" => \$lsf_memory,
-	         "lsf_account=s" => \$lsf_account,
+	         #"lsf_nb_jobs=i" => \$lsf_nb_jobs,
+	         #"lsf_queue=s" => \$lsf_queue,
+	         #"lsf_account=s" => \$lsf_account,
+	         #"lsf_time=i" => \$lsf_time,
+	         #"lsf_memory=i" => \$lsf_memory,
+	         #"lsf_account=s" => \$lsf_account,
 	         "R=s" => \$revcom_method,
 	         "x=s" => \$distance,
 	         "algorithm=s" => \$hclust_algorithm) or die("Error in command line arguments\n");
@@ -140,21 +140,21 @@ if ($chimera !~ /^[YN]$/) {
 	die("-chimera can take options Y or N.\n");
 }
 
-if ($lsf_nb_jobs eq "") {
-	$lsf_nb_jobs = 20;
-}
+# if ($lsf_nb_jobs eq "") {
+# 	$lsf_nb_jobs = 20;
+# }
 
-if ($lsf_queue eq "") {
-	$lsf_queue = "scavenger";
-}
+# if ($lsf_queue eq "") {
+# 	$lsf_queue = "scavenger";
+# }
 
-if ($lsf_time eq "") {
-	$lsf_time = "12";
-}
+# if ($lsf_time eq "") {
+# 	$lsf_time = "12";
+# }
 
-if ($lsf_memory eq "") {
-	$lsf_memory = 20000;
-}
+# if ($lsf_memory eq "") {
+# 	$lsf_memory = 20000;
+# }
 
 if ($human eq "") {
 	$human = "Y";
@@ -517,84 +517,123 @@ else {
 
 # Write and launch job files
 ################################################################################
-if ($distance eq "NW") {
-	my $total_sequence_count = `grep '>' $opt_o/targets.ss.FF.C.fa | wc -l`;
-	chomp($total_sequence_count);
+if ($distance eq "PW") {
+	my @seqs;
+	my $is = Bio::SeqIO->new(-file => $opt_o."/targets.ss.FF.C.fa", -format => "fasta");
 
-	my $total_job_file_count = ceil($total_sequence_count/$lsf_nb_jobs);
-	my $cmd = $cwd . "utils/split_fasta_file.pl $opt_o/targets.ss.FF.C.fa $total_job_file_count";
+	while (my $obj = $is->next_seq()) {
+		push(@seqs, $obj);
+	}
 
-	`$cmd`;
+	# Number of alignments per CPU
+	my $partition = int((@seqs * @seqs) / $opt_p);
 
-	`mkdir $opt_o/jobs`;
-	`mkdir $opt_o/logs`;
-	`mkdir $opt_o/alignments`;
-	`mkdir $opt_o/tmp`;
+	print("Performing $partition pairwise alignments per CPU...\n");
 
-	my $db = $opt_o . "/targets.ss.FF.C.fa";
-
-	my @files = <$opt_o/*.fasta>;
 	my $count = 0;
+	my $file_suffix = 1;
 
-	foreach my $file (@files) {
-		if (-s $file > 0) {
+	open(my $fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
+
+	for (my $i=0; $i<@seqs; $i++) {
+		my $seq1 = @seqs[$i];
+
+		for (my $c=0; $c<@seqs; $c++) {
+			my $seq2 = @seqs[$c];
+
+			print($fh_out ">".$seq1->display_id . "\n");
+			print($fh_out $seq1->seq . "\n");
+
+			print($fh_out ">".$seq2->display_id . "\n");
+			print($fh_out $seq2->seq . "\n");
+
 			$count ++ ;
 
-			my $job_script = "#BSUB -L /bin/bash
-	#BSUB -n 1
-	#BSUB -J oclust_".$count."
-	#BSUB -oo ../logs/$count.log
-	#BSUB -eo ../logs/$count.err
-	#BSUB -q $lsf_queue
-	#BSUB -R rusage[mem=$lsf_memory]
-	#BSUB -W $lsf_time" . ":00\n";
-
-			if ($lsf_account ne "") {
-				$job_script .= "#BSUB -P $lsf_account\n";
+			if ($count > $partition) {
+				$file_suffix ++ ;
+				$count = 0;
+				open($fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
 			}
-
-			$job_script .= "cd $opt_o
-	$cwd";
-
-			$job_script .= "utils/needle_runner.pl $file $db $opt_o/alignments/$count" . ".needle.out $opt_o/tmp $count\n\n";
-
-			open(fh, ">".$opt_o."/jobs/$count".".job");
-			print(fh $job_script);
-			close(fh);
 		}
 	}
 
-	print("Creating $count job file(s).\n");
+	#my $total_sequence_count = `grep '>' $opt_o/targets.ss.FF.C.fa | wc -l`;
+	#chomp($total_sequence_count);
 
-	# Submit jobs and record job identifiers so that we can track them
-	my @files = <$opt_o/jobs/*>;
-	my @ids;
+	# my $total_job_file_count = ceil($total_sequence_count/$lsf_nb_jobs);
+	# my $cmd = $cwd . "utils/split_fasta_file.pl $opt_o/targets.ss.FF.C.fa $total_job_file_count";
 
-	foreach my $job (@files) {
-		my $cmd = "cd $opt_o/jobs";
+	# `$cmd`;
 
-		$job =~ /^.+\/(\S+)$/;
-		my $fn = $1;
+	# `mkdir $opt_o/jobs`;
+	# `mkdir $opt_o/logs`;
+	# `mkdir $opt_o/alignments`;
+	# `mkdir $opt_o/tmp`;
 
-		my $q = "$cmd; bsub < $fn";
-		my $out = `$q`;
+	# my $db = $opt_o . "/targets.ss.FF.C.fa";
 
-		$out =~ /^\S+ <(\S+)>/;
-		my $job_id = $1;
+	# my @files = <$opt_o/*.fasta>;
+	# my $count = 0;
 
-		push(@ids, $job_id);
+	# foreach my $file (@files) {
+	# 	if (-s $file > 0) {
+	# 		$count ++ ;
 
-		print("Submitted $job\n");
-	}
+	# 		my $job_script = "#BSUB -L /bin/bash
+	# #BSUB -n 1
+	# #BSUB -J oclust_".$count."
+	# #BSUB -oo ../logs/$count.log
+	# #BSUB -eo ../logs/$count.err
+	# #BSUB -q $lsf_queue
+	# #BSUB -R rusage[mem=$lsf_memory]
+	# #BSUB -W $lsf_time" . ":00\n";
 
-	# Write running jobs
-	open(fh, ">" . $opt_o . "/submitted_jobs.txt");
+	# 		if ($lsf_account ne "") {
+	# 			$job_script .= "#BSUB -P $lsf_account\n";
+	# 		}
 
-	foreach my $id (@ids) {
-		print(fh "$id\n");
-	}
+	# 		$job_script .= "cd $opt_o
+	# $cwd";
 
-	close(fh);
+	# 		$job_script .= "utils/needle_runner.pl $file $db $opt_o/alignments/$count" . ".needle.out $opt_o/tmp $count\n\n";
+
+	# 		open(fh, ">".$opt_o."/jobs/$count".".job");
+	# 		print(fh $job_script);
+	# 		close(fh);
+	# 	}
+	# }
+
+	# print("Creating $count job file(s).\n");
+
+	# # Submit jobs and record job identifiers so that we can track them
+	# my @files = <$opt_o/jobs/*>;
+	# my @ids;
+
+	# foreach my $job (@files) {
+	# 	my $cmd = "cd $opt_o/jobs";
+
+	# 	$job =~ /^.+\/(\S+)$/;
+	# 	my $fn = $1;
+
+	# 	my $q = "$cmd; bsub < $fn";
+	# 	my $out = `$q`;
+
+	# 	$out =~ /^\S+ <(\S+)>/;
+	# 	my $job_id = $1;
+
+	# 	push(@ids, $job_id);
+
+	# 	print("Submitted $job\n");
+	# }
+
+	# # Write running jobs
+	# open(fh, ">" . $opt_o . "/submitted_jobs.txt");
+
+	# foreach my $id (@ids) {
+	# 	print(fh "$id\n");
+	# }
+
+	# close(fh);
 }
 else {
 	# Build the covariance model
