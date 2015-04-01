@@ -33,7 +33,7 @@ for example using the 'fastq_to_fasta' script:
    format it.
 
    ```
-   $ ./oclust_pipeline.pl -x <method> -f <input fasta file> -o <output directory> -p 1 -minl 400 -maxl 1000
+   $ ./oclust_pipeline.pl -x <method> -f <input file> -o <output directory> -p <number of CPUs>
 
    General settings:
    -x PW or MSA               Can be PW for pairwise alignments (based on Ngila)

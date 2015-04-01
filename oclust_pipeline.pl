@@ -55,7 +55,7 @@ if (! -e "$cwd/bin/hmmscan") {
 
 die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.oscar.franzen\@gmail.com>, Mount Sinai, New York, U.S.A.\n\nCommand line arguments:
 
-	-x <method> -f <input fasta file> -o <output directory> -p 1
+	-x <method> -f <input file> -o <output directory> -p <number of CPUs>
 
 	General settings:
 	-x PW or MSA               Can be PW for pairwise alignments (based on Ngila)
