@@ -25,8 +25,10 @@ sub workaround {
 }
 
 use lib workaround(); # path to bioperl
+
 use Bio::SeqIO;
 use Bio::AlignIO;
+use Parallel::ForkManager;
 
 # Can we find the binaries?
 if (! -e "$cwd/bin/blastall") {
@@ -558,6 +560,26 @@ if ($distance eq "PW") {
 	}
 
 	`mkdir $opt_o/alignments`;
+
+	my $pm = Parallel::ForkManager->new($opt_p);
+
+	for (my $i=1; $i<=$file_suffix; $i++) {
+		my $pid = $pm->start and next;
+
+		# Inside the child process
+		my $cmd = $cwd . "/bin/ngila --pairs each -o " . $opt_o . "/partition_" . $i . ".fa.fas " . $opt_o . "/partition_" . $i . ".fa";
+		#system ("sleep 10s; echo hej");
+
+		system($cmd);
+
+		$pm->finish; # Terminates the child process
+	}
+
+	print("Performing alignments... this may take a while.\n");
+
+	$pm->wait_all_children();
+
+	print("Alignments finished. Parsing...\n");
 
 	#my $total_sequence_count = `grep '>' $opt_o/targets.ss.FF.C.fa | wc -l`;
 	#chomp($total_sequence_count);
