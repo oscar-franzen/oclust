@@ -567,6 +567,8 @@ if ($distance eq "PW") {
 	}
 
 	`mkdir $opt_o/alignments`;
+	`mkdir $opt_o/jobs`;
+	`mkdir $opt_o/logs`;
 
 	my $pm = Parallel::ForkManager->new($opt_p);
 
@@ -574,10 +576,10 @@ if ($distance eq "PW") {
 		my $pid = $pm->start and next;
 
 		# Inside the child process
-		my $cmd = $cwd . "/bin/ngila --pairs each -o " . $opt_o . "/partition_" . $i . ".fa.fas " . $opt_o . "/partition_" . $i . ".fa";
+		#my $cmd = $cwd . "/bin/ngila --pairs each -o " . $opt_o . "/partition_" . $i . ".fa.fas " . $opt_o . "/partition_" . $i . ".fa";
 		#system ("sleep 10s; echo hej");
 
-		system($cmd);
+		#system($cmd);
 
 		$pm->finish; # Terminates the child process
 	}
@@ -596,8 +598,6 @@ if ($distance eq "PW") {
 
 	# `$cmd`;
 
-	# `mkdir $opt_o/jobs`;
-	# `mkdir $opt_o/logs`;
 	# `mkdir $opt_o/tmp`;
 
 	# my $db = $opt_o . "/targets.ss.FF.C.fa";
