@@ -60,15 +60,16 @@ die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.osca
 	-x <method> -f <input file> -o <output directory> -p <number of CPUs>
 
 	General settings:
-	-x PW or MSA               Can be PW for pairwise alignments (based on Ngila)
-	                           or MSA for multiple sequence alignment (based on
-	                           Infernal). [MSA]
+	-x PW or MSA               Can be PW for pairwise alignments (based on Needleman-Wunsch)
+	                           or MSA for multiple sequence alignment (based on Infernal). [MSA]
+	-t local or cluster        If -x is PW, should it be parallelized by running it locally
+	                           on multiple cores or by submitting jobs to a cluster. [local]
 	-a complete, average or    The desired clustering algorithm. [complete]
-	  single    
+	single    
 	-f [string]                Input fasta file.
 	-o [string]                Name of output directory (must not exist) and use full path.
 	-R HMM, BLAST, or none     Method to use for reverse complementing sequences. [HMM]
-	-p [integer]               Number of processor cores to use. [4]
+	-p [integer]               Number of processor cores to use for BLAST. [4]
 	-minl [integer]            Minimum sequence length. [optional]
 	-maxl [integer]            Maximum sequence length. [optional]
 	-rand [integer]            Randomly sample a specified number of sequences. [optional]
@@ -76,7 +77,7 @@ die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.osca
 	                           screen towards the human genome. [Y]
 	-chimera Y or N            Run chimera check. Can be Y or N. [Y]
 
-	LSF settings (only valid for -x PW):
+	LSF settings (only valid for -x PW when -t cluster):
 	-lsf_queue [string]        Name of the LSF queue to use [scavenger].
 	-lsf_account [string]      Name of the account to use.
 	-lsf_time [integer]        Runtime hours per job specified as number of hours. [12]
