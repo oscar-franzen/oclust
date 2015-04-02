@@ -4,6 +4,7 @@ A pipeline for clustering long 16S rRNA sequencing reads into Operational Taxono
 # Requirements
 * Linux
 * Perl 5
+* A computer cluster with the LSF scheduler if you want to run the Needleman-Wunsch alignments.
 
 # Input files
 The only input file to oclust is a file in FASTA format containing the sequencing reads to be
@@ -38,7 +39,7 @@ for example using the 'fastq_to_fasta' script:
    $ ./oclust_pipeline.pl -x <method> -f <input file> -o <output directory> -p <number of CPUs>
 
    General settings:
-   -x PW or MSA               Can be PW for pairwise alignments (based on Ngila)
+   -x PW or MSA               Can be PW for pairwise alignments (based on Needleman-Wunsch)
                                or MSA for multiple sequence alignment (based on
                                Infernal). [MSA]
    -a complete, average or    The desired clustering algorithm. [complete]
@@ -46,13 +47,20 @@ for example using the 'fastq_to_fasta' script:
    -f [string]                Input fasta file.
    -o [string]                Name of output directory (must not exist) and use full path.
    -R HMM, BLAST, or none     Method to use for reverse complementing sequences. [HMM]
-   -p [integer]               Number of processor cores to use. [4]
+   -p [integer]               Number of processor cores to use for BLAST. [4]
    -minl [integer]            Minimum sequence length. [optional]
    -maxl [integer]            Maximum sequence length. [optional]
    -rand [integer]            Randomly sample a specified number of sequences. [optional]
    -human Y or N              If 'Y'es, then execute BLAST-based contamination
                                screen towards the human genome. [Y]
    -chimera Y or N            Run chimera check. Can be Y or N. [Y]
+
+   LSF settings:
+    -lsf_queue [string]        Name of the LSF queue to use (default=scavenger).
+    -lsf_account [string]      Name of the account to use (might not be necessary).
+    -lsf_time [integer]        Runtime hours per job specified as number of hours (default=12).
+    -lsf_memory [integer]      Requested amount of RAM in MB (default=20000).
+    -lsf_nb_jobs [integer]     Number of jobs (default=20).
    ```
 
 4. Run the last step in the pipeline:
@@ -81,7 +89,7 @@ The oclust pipeline bundles together the following open source/public domain sof
 * HMMER (hmmscan) [http://hmmer.janelia.org/]
 * vrevcomp [http://www.microbiome.ch/web/Tools.html]
 * infernal [http://infernal.janelia.org/]
-* Ngila [http://scit.us/projects/ngila/]
+* seq-align Needleman-Wunsch implementation [https://github.com/noporpoise/seq-align]
 * beer [http://en.wikipedia.org/wiki/India_Pale_Ale]
 
 # Help/suggestions
