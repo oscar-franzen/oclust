@@ -1,7 +1,9 @@
+# About oclust
+A pipeline for clustering long 16S rRNA sequencing reads into Operational Taxonomic Units.
+
 # Requirements
 * Linux
-* Perl 5.x
-* A computing cluster running LSF if you plan to run the pairwise alignments.
+* Perl 5
 
 # Input files
 The only input file to oclust is a file in FASTA format containing the sequencing reads to be
@@ -67,11 +69,13 @@ for example using the 'fastq_to_fasta' script:
 6. If everything went fine there should now be files with the extension `hclust` in the specified directory. These files are space-delimited and contain two columns (with header). The first column contains the identifier of the sequencing read and the second column contains the OTU (cluster) designation. Clustering is performed on four distances (0.01 to 0.04). If other distances are desired this can be achieved by modifying `hclust.R` in the `utils` directory.
 
 # Dependencies
-The oclust pipeline bundles together the following open source/public domain programs:
+The oclust pipeline bundles together the following open source/public domain software:
 
 * R [http://www.r-project.org], compiled with: `./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no`
 * The seqinr R package [http://cran.r-project.org/web/packages/seqinr/]
 * Perl and BioPerl [http://www.bioperl.org]
+* Parallel::ForkManager [http://search.cpan.org/~dlux/Parallel-ForkManager-0.7.5/ForkManager.pm]
+* Memory::Usage [http://search.cpan.org/~doneill/Memory-Usage-0.201/lib/Memory/Usage.pm]
 * NCBI BLAST [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/]
 * uchime (public domain version) [http://drive5.com/uchime/uchime_download.html]
 * HMMER (hmmscan) [http://hmmer.janelia.org/]
