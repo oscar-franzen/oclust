@@ -557,6 +557,8 @@ if ($distance eq "PW") {
 		}
 	}
 
+	`mkdir $opt_o/alignments`;
+
 	#my $total_sequence_count = `grep '>' $opt_o/targets.ss.FF.C.fa | wc -l`;
 	#chomp($total_sequence_count);
 
@@ -567,7 +569,6 @@ if ($distance eq "PW") {
 
 	# `mkdir $opt_o/jobs`;
 	# `mkdir $opt_o/logs`;
-	# `mkdir $opt_o/alignments`;
 	# `mkdir $opt_o/tmp`;
 
 	# my $db = $opt_o . "/targets.ss.FF.C.fa";
