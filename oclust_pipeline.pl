@@ -535,9 +535,9 @@ else {
 	print("Output files will be written to: $opt_o\n\n");
 }
 
-# Write and launch job files
+# Pairwise alignments
 ################################################################################
-if ($distance eq "PW") {
+if ($distance eq "PW" && $parallel_type eq "local") {
 	my @seqs;
 	my $is = Bio::SeqIO->new(-file => $opt_o."/targets.ss.FF.C.fa", -format => "fasta");
 
@@ -546,7 +546,8 @@ if ($distance eq "PW") {
 	}
 
 	# Number of alignments per CPU
-	my $partition = int((@seqs * @seqs) / $opt_p);
+	# Divided by two, because performing the alignment A:B is the same as B:A.
+	my $partition = int( ((@seqs * @seqs)/2) / $opt_p);
 
 	print("Performing $partition pairwise alignments per CPU...\n");
 
@@ -586,6 +587,8 @@ if ($distance eq "PW") {
 		}
 	}
 
+	exit;
+
 	my $pm = Parallel::ForkManager->new($opt_p);
 
 	for (my $i=1; $i<=$file_suffix; $i++) {
@@ -594,7 +597,7 @@ if ($distance eq "PW") {
 		# Inside the child process
 		my $cmd = $cwd . "/bin/needleman_wunsch --printfasta --file " . $opt_o . "/partition_" . $i . ".fa > " . $opt_o . "/partition_" . $i . ".fa.fas";
 
-		#system($cmd);
+		system($cmd);
 
 		$pm->finish; # Terminates the child process
 	}
@@ -784,6 +787,24 @@ if ($distance eq "PW") {
 
 	close(fh_dist);
 
+	my $cmd = "cat $cwd/bin/R/bin/R";
+	my $o = `$cmd`;
+
+	$o =~ s/\/home\/foobar\/oclust\//$cwd/g;
+	$o =~ s/R_installed/R/g;
+
+	open(fh, ">" . $cwd."/bin/R/bin/R.fixed");
+	print(fh "$o\n");
+	close(fh);
+
+	my $cmd = "chmod +x $cwd/bin/R/bin/R.fixed";
+	`$cmd`;
+
+	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd $opt_o"."/dist.mat $opt_o $hclust_algorithm PW < $cwd/utils/hclust_fr_aln.R";
+	`$cmd`;
+
+	print("*** oclust running in PW [local]-mode has finished. ***\n\n Results are in:\n$opt_o\n");
+
 	#`mkdir $opt_o/jobs`;
 	#`mkdir $opt_o/logs`;
 
@@ -965,5 +986,5 @@ else {
 	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd $opt_o"."/infernal.F.fasta $opt_o $hclust_algorithm MSA < $cwd/utils/hclust_fr_aln.R";
 	`$cmd`;
 
-	print("oclust running in MSA-mode has finished. Results are in:\n$opt_o\n");
+	print("*** oclust running in MSA-mode has finished. *** \nResults are in:\n$opt_o\n");
 }
