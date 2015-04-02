@@ -587,8 +587,6 @@ if ($distance eq "PW" && $parallel_type eq "local") {
 		}
 	}
 
-	exit;
-
 	my $pm = Parallel::ForkManager->new($opt_p);
 
 	for (my $i=1; $i<=$file_suffix; $i++) {
