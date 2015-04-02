@@ -606,7 +606,8 @@ if ($distance eq "PW") {
 	print("Alignments finished. Writing distance matrix.\n");
 
 	my @files = <$opt_o/*.fas>;
-	my %identities;
+	my %distances;
+	my %all_ids;
 
 	foreach my $file (@files) {
 		open(fh, "$file\n");
@@ -619,6 +620,9 @@ if ($distance eq "PW") {
 
 			chomp($id1);
 			chomp($id2);
+
+			$all_ids{$id1} = 1;
+			$all_ids{$id2} = 1;
 
 			chomp($str1);
 			chomp($str2);
@@ -741,11 +745,44 @@ if ($distance eq "PW") {
 			my $fraction_differences = $differences / $total;
 			$fraction_differences = sprintf("%.5f", $fraction_differences);
 
-			$identities{$id1}{$id2} = $fraction_differences;
+			$distances{$id1}{$id2} = $fraction_differences;
 		}
 
 		close(fh);
 	}
+
+	open(fh_dist, ">$opt_o" . "/dist.mat");
+
+	my $first_row;
+
+	foreach my $id (keys(%all_ids)) {
+		$first_row .= "$id ";
+	}
+
+	chop($first_row);
+	print(fh_dist "$first_row\n");
+
+	foreach my $id1 (keys(%all_ids)) {
+		my $l = "$id1 ";
+
+		foreach my $id2 (keys(%all_ids)) {
+			if ($id1 eq $id2) {
+				$l .= "0 ";
+			}
+			elsif ($distances{$id1}{$id2} ne "") {
+				$l .= $distances{$id1}{$id2} . " ";
+			}
+			elsif ($distances{$id2}{$id1} ne "") {
+				$l .= $distances{$id2}{$id1} . " ";
+			}
+		}
+
+		chop($l);
+
+		print(fh_dist "$l\n");
+	}
+
+	close(fh_dist);
 
 	#`mkdir $opt_o/jobs`;
 	#`mkdir $opt_o/logs`;
