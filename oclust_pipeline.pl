@@ -236,7 +236,7 @@ if ($cmd_out eq "") {
 # Create output directory
 ################################################################################
 if (-e $opt_o) {
-	print("Error: output directory exists\n"); exit;
+	#print("Error: output directory exists\n"); exit;
 }
 
 `mkdir $opt_o 2>/dev/null`;
@@ -594,7 +594,7 @@ if ($distance eq "PW") {
 		# Inside the child process
 		my $cmd = $cwd . "/bin/needleman_wunsch --printfasta --file " . $opt_o . "/partition_" . $i . ".fa > " . $opt_o . "/partition_" . $i . ".fa.fas";
 
-		system($cmd);
+		#system($cmd);
 
 		$pm->finish; # Terminates the child process
 	}
@@ -741,7 +741,7 @@ if ($distance eq "PW") {
 			my $fraction_differences = $differences / $total;
 			$fraction_differences = sprintf("%.5f", $fraction_differences);
 
-			print("$id1 $id2 $fraction_differences\n"); <stdin>;
+			$identities{$id1}{$id2} = $fraction_differences;
 		}
 
 		close(fh);
