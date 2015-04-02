@@ -45,7 +45,7 @@ for example using the 'fastq_to_fasta' script:
    -t local or cluster        If -x is PW, should it be parallelized by running it locally
                                on multiple cores or by submitting jobs to a cluster. [local]
    -a complete, average or    The desired clustering algorithm. [complete]
-      single    
+       single    
    -f [string]                Input fasta file.
    -o [string]                Name of output directory (must not exist) and use full path.
    -R HMM, BLAST, or none     Method to use for reverse complementing sequences. [HMM]
