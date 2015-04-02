@@ -98,11 +98,11 @@ my $revcom_method;
 my $distance;
 my $hclust_algorithm;
 
-#my $lsf_nb_jobs;
-#my $lsf_queue;
-#my $lsf_time;
-#my $lsf_memory;
-#my $lsf_account;
+my $lsf_nb_jobs;
+my $lsf_queue;
+my $lsf_time;
+my $lsf_memory;
+my $lsf_account;
 
 GetOptions ("file=s" => \$opt_f,
 	         "out=s" => \$opt_o,
@@ -567,8 +567,6 @@ if ($distance eq "PW") {
 	}
 
 	`mkdir $opt_o/alignments`;
-	`mkdir $opt_o/jobs`;
-	`mkdir $opt_o/logs`;
 
 	my $pm = Parallel::ForkManager->new($opt_p);
 
@@ -576,19 +574,21 @@ if ($distance eq "PW") {
 		my $pid = $pm->start and next;
 
 		# Inside the child process
-		#my $cmd = $cwd . "/bin/ngila --pairs each -o " . $opt_o . "/partition_" . $i . ".fa.fas " . $opt_o . "/partition_" . $i . ".fa";
-		#system ("sleep 10s; echo hej");
+		my $cmd = $cwd . "/bin/needleman_wunsch --printfasta --file " . $opt_o . "/partition_" . $i . ".fa > " . $opt_o . "/partition_" . $i . ".fa.fas";
 
 		#system($cmd);
 
 		$pm->finish; # Terminates the child process
 	}
 
-	print("Performing alignments... this may take a while.\n");
+	print("Running alignments. This may take a while.\n");
 
 	$pm->wait_all_children();
 
 	print("Alignments finished. Parsing...\n");
+
+	#`mkdir $opt_o/jobs`;
+	#`mkdir $opt_o/logs`;
 
 	#my $total_sequence_count = `grep '>' $opt_o/targets.ss.FF.C.fa | wc -l`;
 	#chomp($total_sequence_count);
