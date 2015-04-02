@@ -76,6 +76,13 @@ die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.osca
 	                           screen towards the human genome. [Y]
 	-chimera Y or N            Run chimera check. Can be Y or N. [Y]
 
+	LSF settings (only valid for -x NW):
+	-lsf_queue [string]        Name of the LSF queue to use [scavenger].
+	-lsf_account [string]      Name of the account to use.
+	-lsf_time [integer]        Runtime hours per job specified as number of hours. [12]
+	-lsf_memory [integer]      Requested amount of RAM in MB. [20000]
+	-lsf_nb_jobs [integer]     Number of jobs. [20]
+
 	Usage example: -x MSA -f /home/foobar/long_reads.fasta -o /home/foobar/foo -p 4 -minl 700 -maxl 800\n\n") if (@ARGV == 0);
 
 my $opt_f;
@@ -106,12 +113,12 @@ GetOptions ("file=s" => \$opt_f,
 	         "rand=i" => \$random_subset,
 	         "human=s" => \$human,
 	         "chimera=s" => \$chimera,
-	         #"lsf_nb_jobs=i" => \$lsf_nb_jobs,
-	         #"lsf_queue=s" => \$lsf_queue,
-	         #"lsf_account=s" => \$lsf_account,
-	         #"lsf_time=i" => \$lsf_time,
-	         #"lsf_memory=i" => \$lsf_memory,
-	         #"lsf_account=s" => \$lsf_account,
+	         "lsf_nb_jobs=i" => \$lsf_nb_jobs,
+	         "lsf_queue=s" => \$lsf_queue,
+	         "lsf_account=s" => \$lsf_account,
+	         "lsf_time=i" => \$lsf_time,
+	         "lsf_memory=i" => \$lsf_memory,
+	         "lsf_account=s" => \$lsf_account,
 	         "R=s" => \$revcom_method,
 	         "x=s" => \$distance,
 	         "algorithm=s" => \$hclust_algorithm) or die("Error in command line arguments\n");
@@ -142,21 +149,21 @@ if ($chimera !~ /^[YN]$/) {
 	die("-chimera can take options Y or N.\n");
 }
 
-# if ($lsf_nb_jobs eq "") {
-# 	$lsf_nb_jobs = 20;
-# }
+if ($lsf_nb_jobs eq "") {
+	$lsf_nb_jobs = 20;
+}
 
-# if ($lsf_queue eq "") {
-# 	$lsf_queue = "scavenger";
-# }
+if ($lsf_queue eq "") {
+	$lsf_queue = "scavenger";
+}
 
-# if ($lsf_time eq "") {
-# 	$lsf_time = "12";
-# }
+if ($lsf_time eq "") {
+	$lsf_time = "12";
+}
 
-# if ($lsf_memory eq "") {
-# 	$lsf_memory = 20000;
-# }
+if ($lsf_memory eq "") {
+	$lsf_memory = 20000;
+}
 
 if ($human eq "") {
 	$human = "Y";
@@ -190,11 +197,11 @@ if ($distance ne "MSA" && $distance ne "PW") {
 
 if ($distance eq "PW") {
 	# In this system equipped with LSF?
-	#my $init = `bsub -V 2>&1`;
+	my $init = `bsub -V 2>&1`;
 
-	#if ($init eq "") {
-	#	print("This system is not supported. oclust can only run on a cluster environment equipped with the LSF scheduler.\n\n"); exit;
-	#}
+	if ($init eq "") {
+		print("-x PW can only run on a cluster environment equipped with the LSF scheduler. Try -x MSA instead.\n\n"); exit;
+	}
 }
 
 # Is this a fasta file?
