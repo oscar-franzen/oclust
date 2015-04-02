@@ -98,6 +98,7 @@ my $chimera;
 my $revcom_method;
 my $distance;
 my $hclust_algorithm;
+my $parallel_type;
 
 my $lsf_nb_jobs;
 my $lsf_queue;
@@ -122,7 +123,16 @@ GetOptions ("file=s" => \$opt_f,
 	         "lsf_account=s" => \$lsf_account,
 	         "R=s" => \$revcom_method,
 	         "x=s" => \$distance,
-	         "algorithm=s" => \$hclust_algorithm) or die("Error in command line arguments\n");
+	         "algorithm=s" => \$hclust_algorithm,
+	         "type=s" => \$parallel_type) or die("Error in command line arguments\n");
+
+if ($parallel_type eq "") {
+	$parallel_type = "local";
+}
+
+if ($parallel_type ne "local" && $parallel_type ne "cluster") {
+	print("-t must be local or cluster\n"); exit;
+}
 
 if ($hclust_algorithm eq "") {
 	$hclust_algorithm = "complete";
@@ -545,29 +555,36 @@ if ($distance eq "PW") {
 
 	open(my $fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
 
+	my %done;
+
 	for (my $i=0; $i<@seqs; $i++) {
 		my $seq1 = @seqs[$i];
 
 		for (my $c=0; $c<@seqs; $c++) {
 			my $seq2 = @seqs[$c];
 
-			print($fh_out ">".$seq1->display_id . "\n");
-			print($fh_out $seq1->seq . "\n");
+			if ($i != $c) {
+				if ($done{$c.":".$i} eq "") {
+					print($fh_out ">".$seq1->display_id . "\n");
+					print($fh_out $seq1->seq . "\n");
 
-			print($fh_out ">".$seq2->display_id . "\n");
-			print($fh_out $seq2->seq . "\n");
+					print($fh_out ">".$seq2->display_id . "\n");
+					print($fh_out $seq2->seq . "\n");
 
-			$count ++ ;
+					$count ++ ;
 
-			if ($count > $partition) {
-				$file_suffix ++ ;
-				$count = 0;
-				open($fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
+					if ($count > $partition) {
+						$file_suffix ++ ;
+						$count = 0;
+						open($fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
+					}
+
+					$done{$c.":".$i} = 1;
+					$done{$i.":".$c} = 1;
+				}
 			}
 		}
 	}
-
-	`mkdir $opt_o/alignments`;
 
 	my $pm = Parallel::ForkManager->new($opt_p);
 
@@ -577,7 +594,7 @@ if ($distance eq "PW") {
 		# Inside the child process
 		my $cmd = $cwd . "/bin/needleman_wunsch --printfasta --file " . $opt_o . "/partition_" . $i . ".fa > " . $opt_o . "/partition_" . $i . ".fa.fas";
 
-		#system($cmd);
+		system($cmd);
 
 		$pm->finish; # Terminates the child process
 	}
@@ -586,7 +603,149 @@ if ($distance eq "PW") {
 
 	$pm->wait_all_children();
 
-	print("Alignments finished. Parsing...\n");
+	print("Alignments finished. Writing distance matrix.\n");
+
+	my @files = <$opt_o/*.fas>;
+	my %identities;
+
+	foreach my $file (@files) {
+		open(fh, "$file\n");
+
+		while (my $id1 = <fh>) {
+			my $str1 = <fh>;
+
+			my $id2 = <fh>;
+			my $str2 = <fh>;
+
+			chomp($id1);
+			chomp($id2);
+
+			chomp($str1);
+			chomp($str2);
+
+			<fh>; # blank line
+
+			# Remove terminal gaps
+			$str1 = uc($str1);
+			$str2 = uc($str2);
+
+			if ($str1 =~ /^\-/) {
+				$str1 =~ /^(-+)(\S+)/;
+				my $gaps_str = $1;
+				$str1 = $2;
+				$str2 = substr($str2, length($gaps_str), length($str2));
+			}
+
+			if ($str2 =~ /^\-/) {
+				$str2 =~ /^(-+)(\S+)/;
+				my $gaps_str = $1;
+				$str2 = $2;
+				$str1 = substr($str1, length($gaps_str), length($str1));
+			}
+
+			if ($str1 =~ /\-+$/) {
+				$str1 =~ /(\-+)$/;
+				my $gaps_str = $1;
+
+				$str1 = substr($str1, 0, length($str1) - length($gaps_str));
+				$str2 = substr($str2, 0, length($str2) - length($gaps_str));
+			}
+
+			if ($str2 =~ /\-+$/) {
+				$str2 =~ /(\-+)$/;
+				my $gaps_str = $1;
+
+				$str2 = substr($str2, 0, length($str2) - length($gaps_str));
+				$str1 = substr($str1, 0, length($str1) - length($gaps_str));
+			}
+
+			# Delete single base indels
+			my @positions_to_delete;
+
+			while ($str2 =~ m/[ATGC](-)[ATGC]/g) {
+				my $p = pos($str2);
+				push(@positions_to_delete, $p - 2);
+			}
+
+			for (my $i=@positions_to_delete-1; $i>=0; $i--) {
+				my $item = @positions_to_delete[$i];
+				
+				substr($str1, $item, 1) = "";
+				substr($str2, $item, 1) = "";
+			}
+
+			my @positions_to_delete;
+
+			while ($str1 =~ m/[ATGC](-)[ATGC]/g) {
+				my $p = pos($str1);
+				push(@positions_to_delete, $p - 2);
+			}
+
+			for (my $i=@positions_to_delete-1; $i>=0; $i--) {
+				my $item = @positions_to_delete[$i];
+				
+				substr($str1, $item, 1) = "";
+				substr($str2, $item, 1) = "";
+			}
+
+			# Delete indels larger than 4
+			my @positions_to_delete;
+
+			while ($str1 =~ m/[ATGC](-{5,})[ATGC]/g) {
+				my $del_start = pos($str1) - length($1);
+				push(@positions_to_delete, { del_start => $del_start, del_len => length($1) });
+			}
+
+			 for (my $i=@positions_to_delete-1; $i>=0; $i--) {
+				my $item = @positions_to_delete[$i];
+				
+				substr($str1, $item->{del_start} - 1, $item->{del_len}) = "";
+				substr($str2, $item->{del_start} - 1, $item->{del_len}) = "";
+			}
+
+			my @positions_to_delete;
+
+			while ($str2 =~ m/[ATGC](-{5,})[ATGC]/g) {
+				my $del_start = pos($str2) - length($1);
+				push(@positions_to_delete, { del_start => $del_start, del_len => length($1) });
+			}
+
+			 for (my $i=@positions_to_delete-1; $i>=0; $i--) {
+				my $item = @positions_to_delete[$i];
+				
+				substr($str1, $item->{del_start} - 1, $item->{del_len}) = "";
+				substr($str2, $item->{del_start} - 1, $item->{del_len}) = "";
+			}
+
+			# Calc identity
+			my @t1 = split(//, $str1);
+			my @t2 = split(//, $str2);
+
+			my $differences = 0;
+			my $total = 0;
+
+			for (my $i=0; $i<@t1; $i++) {
+				if (@t1[$i] ne "N" && @t2[$i] ne "N") {
+
+					# There are some IUPAC-encoded nucleotides in the miseq data - IGNORE!
+					if (@t1[$i] =~ /[ATGC\-]/ && @t2[$i] =~ /[ATGC\-]/) {
+						if (@t1[$i] ne @t2[$i]) {
+							$differences ++ ;
+						}
+
+						$total ++ ;
+					}
+				}
+			}
+
+			my $fraction_differences = $differences / $total;
+			$fraction_differences = sprintf("%.5f", $fraction_differences);
+
+			print("$id1 $id2 $fraction_differences\n"); <stdin>;
+		}
+
+		close(fh);
+	}
 
 	#`mkdir $opt_o/jobs`;
 	#`mkdir $opt_o/logs`;
