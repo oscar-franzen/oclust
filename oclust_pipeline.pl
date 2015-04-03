@@ -597,12 +597,10 @@ if ($distance eq "PW" && $parallel_type eq "local") {
 
 	close(fh_out);
 
-	my $p = $opt_o . "/run_pw";
-	system("chmod +x $p; $p");
-
 	print("Running alignments. This may take a while.\n");
 
-	#$pm->wait_all_children();
+	my $p = $opt_o . "/run_pw";
+	system("chmod +x $p; $p");
 
 	print("Alignments finished. Writing distance matrix.\n");
 
