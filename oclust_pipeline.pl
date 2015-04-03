@@ -28,7 +28,6 @@ use lib workaround(); # path to bioperl
 
 use Bio::SeqIO;
 use Bio::AlignIO;
-use Parallel::ForkManager;
 
 # Can we find the binaries?
 if (! -e "$cwd/bin/blastall") {
@@ -585,22 +584,25 @@ if ($distance eq "PW" && $parallel_type eq "local") {
 		}
 	}
 
-	my $pm = Parallel::ForkManager->new($opt_p);
+	open(fh_out, ">$opt_o/" . "run_pw");
+	print(fh_out "cd $opt_o\n");
 
 	for (my $i=1; $i<=$file_suffix; $i++) {
-		my $pid = $pm->start and next;
+		my $cmd = $cwd . "bin/needleman_wunsch --printfasta --file " . $opt_o . "/partition_" . $i . ".fa > " . $opt_o . "/partition_" . $i . ".fa.fas &";
 
-		# Inside the child process
-		my $cmd = $cwd . "/bin/needleman_wunsch --printfasta --file " . $opt_o . "/partition_" . $i . ".fa > " . $opt_o . "/partition_" . $i . ".fa.fas";
-
-		system($cmd);
-
-		$pm->finish; # Terminates the child process
+		print(fh_out "$cmd\nsleep 2s\n");
 	}
+
+	print(fh_out "wait");
+
+	close(fh_out);
+
+	my $p = $opt_o . "/run_pw";
+	system("chmod +x $p; $p");
 
 	print("Running alignments. This may take a while.\n");
 
-	$pm->wait_all_children();
+	#$pm->wait_all_children();
 
 	print("Alignments finished. Writing distance matrix.\n");
 
