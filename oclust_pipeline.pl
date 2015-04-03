@@ -77,11 +77,11 @@ die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.osca
 	-chimera Y or N            Run chimera check. Can be Y or N. [Y]
 
 	LSF settings (only valid for -x PW when -t cluster):
-	-lsf_queue [string]        Name of the LSF queue to use [scavenger].
-	-lsf_account [string]      Name of the account to use.
-	-lsf_time [integer]        Runtime hours per job specified as number of hours. [12]
-	-lsf_memory [integer]      Requested amount of RAM in MB. [20000]
-	-lsf_nb_jobs [integer]     Number of jobs. [20]
+	-lsf_queue [string]       Name of the LSF queue to use. [scavenger]
+	-lsf_account [string]     Name of the account to use. [optional]
+	-lsf_time [integer]       Runtime hours per job specified as number of hours. [1]
+	-lsf_memory [integer]     Requested amount of RAM in MB. [3000]
+	-lsf_nb_jobs [integer]    Number of jobs. [20]
 
 	Usage example: -x MSA -f /home/foobar/long_reads.fasta -o /home/foobar/foo -p 4 -minl 700 -maxl 800\n\n") if (@ARGV == 0);
 
@@ -172,7 +172,7 @@ if ($lsf_time eq "") {
 }
 
 if ($lsf_memory eq "") {
-	$lsf_memory = 20000;
+	$lsf_memory = 3000;
 }
 
 if ($human eq "") {
@@ -235,7 +235,7 @@ if ($cmd_out eq "") {
 # Create output directory
 ################################################################################
 if (-e $opt_o) {
-	#print("Error: output directory exists\n"); exit;
+	print("Error: output directory exists\n"); exit;
 }
 
 `mkdir $opt_o 2>/dev/null`;
@@ -878,6 +878,56 @@ if ($distance eq "PW" && $parallel_type eq "local") {
 	# }
 
 	# close(fh);
+}
+elsif ($distance eq "PW" && $parallel_type eq "cluster") {
+	my @seqs;
+	my $is = Bio::SeqIO->new(-file => $opt_o."/targets.ss.FF.C.fa", -format => "fasta");
+
+	while (my $obj = $is->next_seq()) {
+		push(@seqs, $obj);
+	}
+
+	# Number of alignments per CPU
+	# Divided by two, because performing the alignment A:B is the same as B:A.
+	my $partition = int( ((@seqs * @seqs)/2) / $lsf_nb_jobs);
+
+	print("Submitting $partition pairwise alignments per job...\n");
+
+	my $count = 0;
+	my $file_suffix = 1;
+
+	open(my $fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
+
+	my %done;
+
+	for (my $i=0; $i<@seqs; $i++) {
+		my $seq1 = @seqs[$i];
+
+		for (my $c=0; $c<@seqs; $c++) {
+			my $seq2 = @seqs[$c];
+
+			if ($i != $c) {
+				if ($done{$c.":".$i} eq "") {
+					print($fh_out ">".$seq1->display_id . "\n");
+					print($fh_out $seq1->seq . "\n");
+
+					print($fh_out ">".$seq2->display_id . "\n");
+					print($fh_out $seq2->seq . "\n");
+
+					$count ++ ;
+
+					if ($count > $partition) {
+						$file_suffix ++ ;
+						$count = 0;
+						open($fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
+					}
+
+					$done{$c.":".$i} = 1;
+					$done{$i.":".$c} = 1;
+				}
+			}
+		}
+	}
 }
 else {
 	# Build the covariance model
