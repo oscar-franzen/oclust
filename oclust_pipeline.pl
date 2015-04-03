@@ -471,8 +471,6 @@ else {
 # Chimera detection
 ################################################################################
 if ($chimera eq "Y") {
-	print("!\n");
-
 	print("Running chimera check.\n");
 
 	`$cwd/bin/uchime4.2.40_i86linux32 --minh 1.0 --quiet --db $cwd/db/gold.fa --input $opt_o/targets.ss.FF.fa --uchimeout $opt_o/targets.ss.FF.fa.uchime`;
