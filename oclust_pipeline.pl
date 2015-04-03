@@ -168,7 +168,7 @@ if ($lsf_queue eq "") {
 }
 
 if ($lsf_time eq "") {
-	$lsf_time = "12";
+	$lsf_time = "1";
 }
 
 if ($lsf_memory eq "") {
@@ -800,84 +800,6 @@ if ($distance eq "PW" && $parallel_type eq "local") {
 	`$cmd`;
 
 	print("*** oclust running in PW [local]-mode has finished. ***\n\n Results are in:\n$opt_o\n");
-
-	#`mkdir $opt_o/jobs`;
-	#`mkdir $opt_o/logs`;
-
-	#my $total_sequence_count = `grep '>' $opt_o/targets.ss.FF.C.fa | wc -l`;
-	#chomp($total_sequence_count);
-
-	# my $total_job_file_count = ceil($total_sequence_count/$lsf_nb_jobs);
-	# my $cmd = $cwd . "utils/split_fasta_file.pl $opt_o/targets.ss.FF.C.fa $total_job_file_count";
-
-	# `$cmd`;
-
-	# `mkdir $opt_o/tmp`;
-
-	# my $db = $opt_o . "/targets.ss.FF.C.fa";
-
-	# my @files = <$opt_o/*.fasta>;
-	# my $count = 0;
-
-	# foreach my $file (@files) {
-	# 	if (-s $file > 0) {
-	# 		$count ++ ;
-
-	# 		my $job_script = "#BSUB -L /bin/bash
-	# #BSUB -n 1
-	# #BSUB -J oclust_".$count."
-	# #BSUB -oo ../logs/$count.log
-	# #BSUB -eo ../logs/$count.err
-	# #BSUB -q $lsf_queue
-	# #BSUB -R rusage[mem=$lsf_memory]
-	# #BSUB -W $lsf_time" . ":00\n";
-
-	# 		if ($lsf_account ne "") {
-	# 			$job_script .= "#BSUB -P $lsf_account\n";
-	# 		}
-
-	# 		$job_script .= "cd $opt_o
-	# $cwd";
-
-	# 		$job_script .= "utils/needle_runner.pl $file $db $opt_o/alignments/$count" . ".needle.out $opt_o/tmp $count\n\n";
-
-	# 		open(fh, ">".$opt_o."/jobs/$count".".job");
-	# 		print(fh $job_script);
-	# 		close(fh);
-	# 	}
-	# }
-
-	# print("Creating $count job file(s).\n");
-
-	# # Submit jobs and record job identifiers so that we can track them
-	# my @files = <$opt_o/jobs/*>;
-	# my @ids;
-
-	# foreach my $job (@files) {
-	# 	my $cmd = "cd $opt_o/jobs";
-
-	# 	$job =~ /^.+\/(\S+)$/;
-	# 	my $fn = $1;
-
-	# 	my $q = "$cmd; bsub < $fn";
-	# 	my $out = `$q`;
-
-	# 	$out =~ /^\S+ <(\S+)>/;
-	# 	my $job_id = $1;
-
-	# 	push(@ids, $job_id);
-
-	# 	print("Submitted $job\n");
-	# }
-
-	# # Write running jobs
-	# open(fh, ">" . $opt_o . "/submitted_jobs.txt");
-
-	# foreach my $id (@ids) {
-	# 	print(fh "$id\n");
-	# }
-
-	# close(fh);
 }
 elsif ($distance eq "PW" && $parallel_type eq "cluster") {
 	my @seqs;
@@ -927,6 +849,58 @@ elsif ($distance eq "PW" && $parallel_type eq "cluster") {
 				}
 			}
 		}
+	}
+
+	`mkdir $opt_o/jobs`;
+	`mkdir $opt_o/logs`;
+
+	for (my $i=1; $i<=$file_suffix; $i++) {
+		my $job_script = "#BSUB -L /bin/bash
+#BSUB -n 1
+#BSUB -J oclust_".$i."
+#BSUB -oo ../logs/$i.log
+#BSUB -eo ../logs/$i.err
+#BSUB -q $lsf_queue
+#BSUB -R rusage[mem=$lsf_memory]
+#BSUB -W $lsf_time" . ":00\n";
+
+		if ($lsf_account ne "") {
+			$job_script .= "#BSUB -P $lsf_account\n";
+		}
+
+		$job_script .= "cd $opt_o\n";
+		$job_script .= $cwd . "bin/needleman_wunsch --printfasta --file " . $opt_o . "/partition_" . $i . ".fa > " . $opt_o . "/partition_" . $i . ".fa.fas\n";
+
+		open(fh, ">".$opt_o."/jobs/$i".".job");
+		print(fh $job_script);
+		close(fh);
+	}
+
+	my @files = <$opt_o/jobs/*>;
+	my @ids;
+
+	foreach my $job (@files) {
+		my $cmd = "cd $opt_o/jobs";
+
+		$job =~ /^.+\/(\S+)$/;
+		my $fn = $1;
+
+		my $q = "$cmd; bsub < $fn";
+		my $out = `$q`;
+
+		$out =~ /^\S+ <(\S+)>/;
+		my $job_id = $1;
+
+		push(@ids, $job_id);
+
+		print("Submitted $job\n");
+	}
+
+	print(@files . " jobs have been submitted to the cluster. Now waiting for jobs to finish.\n");
+
+	while (1) {
+		print("Woke\n");
+		sleep(60);
 	}
 }
 else {
