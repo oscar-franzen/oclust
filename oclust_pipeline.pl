@@ -7,6 +7,8 @@ use strict 'vars';
 use Getopt::Long;
 use Config;
 use POSIX;
+
+# get the absolute path to the current working directory
 use Cwd 'abs_path';
 
 my $cwd = abs_path($0);
@@ -24,35 +26,19 @@ sub workaround {
 	return $path;
 }
 
-use lib workaround(); # path to bioperl
+use lib workaround(); # path to bundled perl modules
 
 use Bio::SeqIO;
 use Bio::AlignIO;
 
-# Can we find the binaries?
-if (! -e "$cwd/bin/blastall") {
-	print("Error: blastall binary not found.\n\n"); exit;
-}
-
-if (! -e "$cwd/bin/megablast") {
-	print("Error: megablast binary not found.\n\n"); exit;
-}
-
-if (! -e "$cwd/bin/formatdb") {
-	print("Error: formatdb binary not found.\n\n"); exit;
-}
-
-if (! -e "$cwd/bin/emboss.needle.static.linux.x86-64") {
-	print("Error: emboss.needle.static.linux.x86-64 binary not found.\n\n"); exit;
-}
-
-if (! -e "$cwd/bin/uchime4.2.40_i86linux32") {
-	print("Error: uchime4.2.40_i86linux32 binary not found.\n\n"); exit;
-}
-
-if (! -e "$cwd/bin/hmmscan") {
-	print("Error: hmmscan binary not found.\n\n"); exit;
-}
+check_file_exists($cwd."bin/blastall");
+check_file_exists($cwd."bin/megablast");
+check_file_exists($cwd."bin/formatdb");
+check_file_exists($cwd."bin/uchime4.2.40_i86linux32");
+check_file_exists($cwd."bin/hmmscan");
+check_file_exists($cwd."bin/needleman_wunsch");
+check_file_exists($cwd."bin/cmbuild");
+check_file_exists($cwd."bin/cmalign");
 
 die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.oscar.franzen\@gmail.com>, Mount Sinai, New York, U.S.A.\n\nCommand line arguments:
 
@@ -1036,4 +1022,12 @@ sub finish {
 	`$cmd`;
 
 	print("*** oclust running in PW-mode has finished. ***\n\n Results are in:\n$opt_o\n");
+}
+
+sub check_file_exists {
+	my $file = shift;
+
+	if (! -e $file) {
+		print("Error: $file could not be found. Terminating.\n"); exit;
+	}
 }
