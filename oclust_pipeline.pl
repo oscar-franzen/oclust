@@ -235,7 +235,7 @@ if ($cmd_out eq "") {
 # Create output directory
 ################################################################################
 if (-e $opt_o) {
-	print("Error: output directory exists\n"); exit;
+	#print("Error: output directory exists\n"); exit;
 }
 
 `mkdir $opt_o 2>/dev/null`;
@@ -602,6 +602,242 @@ if ($distance eq "PW" && $parallel_type eq "local") {
 	my $p = $opt_o . "/run_pw";
 	system("chmod +x $p; $p");
 
+	finish();
+}
+elsif ($distance eq "PW" && $parallel_type eq "cluster") {
+	my @seqs;
+	my $is = Bio::SeqIO->new(-file => $opt_o."/targets.ss.FF.C.fa", -format => "fasta");
+
+	while (my $obj = $is->next_seq()) {
+		push(@seqs, $obj);
+	}
+
+	# Number of alignments per CPU
+	# Divided by two, because performing the alignment A:B is the same as B:A.
+	my $partition = int( ((@seqs * @seqs)/2) / $lsf_nb_jobs);
+
+	print("Submitting $partition pairwise alignments per job...\n");
+
+	my $count = 0;
+	my $file_suffix = 1;
+
+	open(my $fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
+
+	my %done;
+
+	for (my $i=0; $i<@seqs; $i++) {
+		my $seq1 = @seqs[$i];
+
+		for (my $c=0; $c<@seqs; $c++) {
+			my $seq2 = @seqs[$c];
+
+			if ($i != $c) {
+				if ($done{$c.":".$i} eq "") {
+					print($fh_out ">".$seq1->display_id . "\n");
+					print($fh_out $seq1->seq . "\n");
+
+					print($fh_out ">".$seq2->display_id . "\n");
+					print($fh_out $seq2->seq . "\n");
+
+					$count ++ ;
+
+					if ($count > $partition) {
+						$file_suffix ++ ;
+						$count = 0;
+						open($fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
+					}
+
+					$done{$c.":".$i} = 1;
+					$done{$i.":".$c} = 1;
+				}
+			}
+		}
+	}
+
+	`mkdir $opt_o/jobs`;
+	`mkdir $opt_o/logs`;
+
+	for (my $i=1; $i<=$file_suffix; $i++) {
+		my $job_script = "#BSUB -L /bin/bash
+#BSUB -n 1
+#BSUB -J oclust_".$i."
+#BSUB -oo ../logs/$i.log
+#BSUB -eo ../logs/$i.err
+#BSUB -q $lsf_queue
+#BSUB -R rusage[mem=$lsf_memory]
+#BSUB -W $lsf_time" . ":00\n";
+
+		if ($lsf_account ne "") {
+			$job_script .= "#BSUB -P $lsf_account\n";
+		}
+
+		$job_script .= "cd $opt_o\n";
+		$job_script .= $cwd . "bin/needleman_wunsch --printfasta --file " . $opt_o . "/partition_" . $i . ".fa > " . $opt_o . "/partition_" . $i . ".fa.fas\n";
+
+		open(fh, ">".$opt_o."/jobs/$i".".job");
+		print(fh $job_script);
+		close(fh);
+	}
+
+	my @files = <$opt_o/jobs/*>;
+	my @ids;
+
+	foreach my $job (@files) {
+		my $cmd = "cd $opt_o/jobs";
+
+		$job =~ /^.+\/(\S+)$/;
+		my $fn = $1;
+
+		my $q = "$cmd; bsub < $fn";
+		#my $out = `$q`;
+
+		#$out =~ /^\S+ <(\S+)>/;
+		#my $job_id = $1;
+
+		#push(@ids, $job_id);
+
+		print("Submitted $job\n");
+	}
+
+	print(@files . " jobs have been submitted to the cluster. Now waiting for jobs to finish.\n");
+
+	while (1) {
+		# Check if the number of completed log files correspond to the number of submitted jobs
+		my @logs = <$opt_o/logs/*.log>;
+		my $found_completed_logs = 0;
+
+		foreach my $log (@logs) {
+			open(fh, $log);
+
+			while (my $line = <fh>) {
+				chomp($line);
+				
+				if ($line =~ /Successfully completed./) {
+					$found_completed_logs ++ ;
+					last;
+				}
+			}
+
+			close(fh);
+		}
+
+		if ($found_completed_logs == $lsf_nb_jobs) {
+			print("All submitted jobs have completed.\n");
+			last;
+		}
+
+		sleep(60);
+	}
+
+	finish();
+}
+else {
+	# Build the covariance model
+	my $dir_path = "$cwd" . "/bin/RDPinfernalTraindata";
+
+	if (! -d $dir_path) {
+		my $cmd = "unzip -d $cwd" . "bin $cwd" . "bin/RDPinfernalTraindata.zip";
+		`$cmd`;
+	}
+
+	my $f = $cwd . "bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk.cm";
+
+	if (! -e $f) {
+		print("Running cmbuild.\n");
+		my $cmd = $cwd . "bin/cmbuild --ere 1.4 $cwd"."bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk.cm $cwd"."bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk";
+
+		`$cmd`;
+	}
+
+	# Infernal-based
+	print("Running cmalign.\n");
+	my $f = $opt_o . "/targets.ss.FF.C.fa";
+	my $cmd = $cwd."bin/cmalign --cpu $opt_p -o $opt_o" . "/infernal.sto $cwd" . "bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk.cm $f 2>/dev/null >/dev/null";
+
+	`$cmd`;
+
+	# Convert to fasta and remove sequences without any homologous positions
+	my $in = Bio::AlignIO->new(-file => $opt_o."/infernal.sto", '-format' => 'stockholm');
+	my @alignments;
+
+	while ( my $aln = $in->next_aln() ) {
+		foreach my $seq ($aln->each_seq()) {
+			push(@alignments, $seq);
+		}
+	}
+
+	print("Checking alignment for consistency.\n");
+
+	my %res;
+
+	for (my $i=0; $i<@alignments; $i++) {
+		my $seq1 = @alignments[$i];
+
+		for (my $k=0; $k<@alignments; $k++) {
+			if ($k != $i) {
+				my $seq2 = @alignments[$k];
+				my $str1 = $seq1->seq;
+				my $str2 = $seq2->seq;
+
+				my $count = 0;
+
+				for (my $q=0; $q<length($str1); $q++) {
+					my $char1 = substr($str1, $q, 1);
+					my $char2 = substr($str2, $q, 1);
+
+					if ($char1 =~ /[ATGC]/i && $char2 =~ /[ATGC]/i) {
+						$count ++ ;
+					}
+				}
+
+				if ($count == 0) {
+					$res{$i} ++ ;
+				}
+			}
+		}
+	}
+
+	my $n = @alignments;
+	$n -- ;
+	my %removal;
+
+	foreach my $index (keys(%res)) {
+		if ($res{$index} == $n) {
+			#print("$index $res{$index} " . @alignments[$index]->display_id . "\n");
+			$removal{@alignments[$index]->display_id} = 1;
+		}
+	}
+
+	my $os = Bio::SeqIO->new(-file => ">" . $opt_o . "/infernal.F.fasta", -format => "fasta");
+
+	print(keys(%removal) . " sequences removed\n");
+
+	foreach my $item (@alignments) {
+		if ($removal{$item->display_id} eq "") {
+			$os->write_seq($item);
+		}
+	}
+
+	my $cmd = "cat $cwd/bin/R/bin/R";
+	my $o = `$cmd`;
+
+	$o =~ s/\/home\/foobar\/oclust\//$cwd/g;
+	$o =~ s/R_installed/R/g;
+
+	open(fh, ">" . $cwd."/bin/R/bin/R.fixed");
+	print(fh "$o\n");
+	close(fh);
+
+	my $cmd = "chmod +x $cwd/bin/R/bin/R.fixed";
+	`$cmd`;
+
+	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd $opt_o"."/infernal.F.fasta $opt_o $hclust_algorithm MSA < $cwd/utils/hclust_fr_aln.R";
+	`$cmd`;
+
+	print("*** oclust running in MSA-mode has finished. *** \nResults are in:\n$opt_o\n");
+}
+
+sub finish {
 	print("Alignments finished. Writing distance matrix.\n");
 
 	my @files = <$opt_o/*.fas>;
@@ -799,212 +1035,5 @@ if ($distance eq "PW" && $parallel_type eq "local") {
 	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd $opt_o"."/dist.mat $opt_o $hclust_algorithm PW < $cwd/utils/hclust_fr_aln.R";
 	`$cmd`;
 
-	print("*** oclust running in PW [local]-mode has finished. ***\n\n Results are in:\n$opt_o\n");
-}
-elsif ($distance eq "PW" && $parallel_type eq "cluster") {
-	my @seqs;
-	my $is = Bio::SeqIO->new(-file => $opt_o."/targets.ss.FF.C.fa", -format => "fasta");
-
-	while (my $obj = $is->next_seq()) {
-		push(@seqs, $obj);
-	}
-
-	# Number of alignments per CPU
-	# Divided by two, because performing the alignment A:B is the same as B:A.
-	my $partition = int( ((@seqs * @seqs)/2) / $lsf_nb_jobs);
-
-	print("Submitting $partition pairwise alignments per job...\n");
-
-	my $count = 0;
-	my $file_suffix = 1;
-
-	open(my $fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
-
-	my %done;
-
-	for (my $i=0; $i<@seqs; $i++) {
-		my $seq1 = @seqs[$i];
-
-		for (my $c=0; $c<@seqs; $c++) {
-			my $seq2 = @seqs[$c];
-
-			if ($i != $c) {
-				if ($done{$c.":".$i} eq "") {
-					print($fh_out ">".$seq1->display_id . "\n");
-					print($fh_out $seq1->seq . "\n");
-
-					print($fh_out ">".$seq2->display_id . "\n");
-					print($fh_out $seq2->seq . "\n");
-
-					$count ++ ;
-
-					if ($count > $partition) {
-						$file_suffix ++ ;
-						$count = 0;
-						open($fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
-					}
-
-					$done{$c.":".$i} = 1;
-					$done{$i.":".$c} = 1;
-				}
-			}
-		}
-	}
-
-	`mkdir $opt_o/jobs`;
-	`mkdir $opt_o/logs`;
-
-	for (my $i=1; $i<=$file_suffix; $i++) {
-		my $job_script = "#BSUB -L /bin/bash
-#BSUB -n 1
-#BSUB -J oclust_".$i."
-#BSUB -oo ../logs/$i.log
-#BSUB -eo ../logs/$i.err
-#BSUB -q $lsf_queue
-#BSUB -R rusage[mem=$lsf_memory]
-#BSUB -W $lsf_time" . ":00\n";
-
-		if ($lsf_account ne "") {
-			$job_script .= "#BSUB -P $lsf_account\n";
-		}
-
-		$job_script .= "cd $opt_o\n";
-		$job_script .= $cwd . "bin/needleman_wunsch --printfasta --file " . $opt_o . "/partition_" . $i . ".fa > " . $opt_o . "/partition_" . $i . ".fa.fas\n";
-
-		open(fh, ">".$opt_o."/jobs/$i".".job");
-		print(fh $job_script);
-		close(fh);
-	}
-
-	my @files = <$opt_o/jobs/*>;
-	my @ids;
-
-	foreach my $job (@files) {
-		my $cmd = "cd $opt_o/jobs";
-
-		$job =~ /^.+\/(\S+)$/;
-		my $fn = $1;
-
-		my $q = "$cmd; bsub < $fn";
-		my $out = `$q`;
-
-		$out =~ /^\S+ <(\S+)>/;
-		my $job_id = $1;
-
-		push(@ids, $job_id);
-
-		print("Submitted $job\n");
-	}
-
-	print(@files . " jobs have been submitted to the cluster. Now waiting for jobs to finish.\n");
-
-	while (1) {
-		print("Woke\n");
-		sleep(60);
-	}
-}
-else {
-	# Build the covariance model
-	my $dir_path = "$cwd" . "/bin/RDPinfernalTraindata";
-
-	if (! -d $dir_path) {
-		my $cmd = "unzip -d $cwd" . "bin $cwd" . "bin/RDPinfernalTraindata.zip";
-		`$cmd`;
-	}
-
-	my $f = $cwd . "bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk.cm";
-
-	if (! -e $f) {
-		print("Running cmbuild.\n");
-		my $cmd = $cwd . "bin/cmbuild --ere 1.4 $cwd"."bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk.cm $cwd"."bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk";
-
-		`$cmd`;
-	}
-
-	# Infernal-based
-	print("Running cmalign.\n");
-	my $f = $opt_o . "/targets.ss.FF.C.fa";
-	my $cmd = $cwd."bin/cmalign --cpu $opt_p -o $opt_o" . "/infernal.sto $cwd" . "bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk.cm $f 2>/dev/null >/dev/null";
-
-	`$cmd`;
-
-	# Convert to fasta and remove sequences without any homologous positions
-	my $in = Bio::AlignIO->new(-file => $opt_o."/infernal.sto", '-format' => 'stockholm');
-	my @alignments;
-
-	while ( my $aln = $in->next_aln() ) {
-		foreach my $seq ($aln->each_seq()) {
-			push(@alignments, $seq);
-		}
-	}
-
-	print("Checking alignment for consistency.\n");
-
-	my %res;
-
-	for (my $i=0; $i<@alignments; $i++) {
-		my $seq1 = @alignments[$i];
-
-		for (my $k=0; $k<@alignments; $k++) {
-			if ($k != $i) {
-				my $seq2 = @alignments[$k];
-				my $str1 = $seq1->seq;
-				my $str2 = $seq2->seq;
-
-				my $count = 0;
-
-				for (my $q=0; $q<length($str1); $q++) {
-					my $char1 = substr($str1, $q, 1);
-					my $char2 = substr($str2, $q, 1);
-
-					if ($char1 =~ /[ATGC]/i && $char2 =~ /[ATGC]/i) {
-						$count ++ ;
-					}
-				}
-
-				if ($count == 0) {
-					$res{$i} ++ ;
-				}
-			}
-		}
-	}
-
-	my $n = @alignments;
-	$n -- ;
-	my %removal;
-
-	foreach my $index (keys(%res)) {
-		if ($res{$index} == $n) {
-			#print("$index $res{$index} " . @alignments[$index]->display_id . "\n");
-			$removal{@alignments[$index]->display_id} = 1;
-		}
-	}
-
-	my $os = Bio::SeqIO->new(-file => ">" . $opt_o . "/infernal.F.fasta", -format => "fasta");
-
-	print(keys(%removal) . " sequences removed\n");
-
-	foreach my $item (@alignments) {
-		if ($removal{$item->display_id} eq "") {
-			$os->write_seq($item);
-		}
-	}
-
-	my $cmd = "cat $cwd/bin/R/bin/R";
-	my $o = `$cmd`;
-
-	$o =~ s/\/home\/foobar\/oclust\//$cwd/g;
-	$o =~ s/R_installed/R/g;
-
-	open(fh, ">" . $cwd."/bin/R/bin/R.fixed");
-	print(fh "$o\n");
-	close(fh);
-
-	my $cmd = "chmod +x $cwd/bin/R/bin/R.fixed";
-	`$cmd`;
-
-	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd $opt_o"."/infernal.F.fasta $opt_o $hclust_algorithm MSA < $cwd/utils/hclust_fr_aln.R";
-	`$cmd`;
-
-	print("*** oclust running in MSA-mode has finished. *** \nResults are in:\n$opt_o\n");
+	print("*** oclust running in PW-mode has finished. ***\n\n Results are in:\n$opt_o\n");
 }
