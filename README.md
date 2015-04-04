@@ -69,18 +69,18 @@ for example using the 'fastq_to_fasta' script:
 # Dependencies
 The oclust pipeline bundles together the following open source/public domain software:
 
-* R [http://www.r-project.org], compiled with: `./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no`
-* The seqinr R package [http://cran.r-project.org/web/packages/seqinr/]
-* Perl and BioPerl [http://www.bioperl.org]
-* Parallel::ForkManager [http://search.cpan.org/~dlux/Parallel-ForkManager-0.7.5/ForkManager.pm]
-* Memory::Usage [http://search.cpan.org/~doneill/Memory-Usage-0.201/lib/Memory/Usage.pm]
-* NCBI BLAST [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/]
-* uchime (public domain version) [http://drive5.com/uchime/uchime_download.html]
-* HMMER (hmmscan) [http://hmmer.janelia.org/]
-* vrevcomp [http://www.microbiome.ch/web/Tools.html]
-* infernal [http://infernal.janelia.org/]
-* seq-align Needleman-Wunsch implementation [https://github.com/noporpoise/seq-align]
-* beer [http://en.wikipedia.org/wiki/India_Pale_Ale]
+* [R](http://www.r-project.org), compiled with: `./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no`
+* [The seqinr R package](http://cran.r-project.org/web/packages/seqinr/)
+* [Perl](http://www.perl.org) and [BioPerl](http://www.bioperl.org)
+* [Parallel::ForkManager](http://search.cpan.org/~dlux/Parallel-ForkManager-0.7.5/ForkManager.pm)
+* [Memory::Usage](http://search.cpan.org/~doneill/Memory-Usage-0.201/lib/Memory/Usage.pm)
+* [NCBI BLAST](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/)
+* [uchime (public domain version)](http://drive5.com/uchime/uchime_download.html)
+* [HMMER (hmmscan)](http://hmmer.janelia.org/)
+* [vrevcomp](http://www.microbiome.ch/web/Tools.html)
+* [infernal](http://infernal.janelia.org/)
+* [seq-align Needleman-Wunsch implementation](https://github.com/noporpoise/seq-align)
+* [beer](http://en.wikipedia.org/wiki/India_Pale_Ale)
 
 # Help/suggestions
 * p.oscar.franzen at gmail.com
