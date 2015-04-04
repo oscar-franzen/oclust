@@ -1,5 +1,6 @@
 # About oclust
-A pipeline for clustering long 16S rRNA sequencing reads into Operational Taxonomic Units.
+A pipeline for clustering long 16S rRNA sequencing reads, or any sequences, into
+[Operational Taxonomic Units](http://en.wikipedia.org/wiki/Operational_taxonomic_unit).
 
 # Requirements
 * Linux
