@@ -74,7 +74,7 @@ The oclust pipeline bundles together the following open source/public domain sof
 * [Perl](http://www.perl.org) and [BioPerl](http://www.bioperl.org)
 * [Parallel::ForkManager](http://search.cpan.org/~dlux/Parallel-ForkManager-0.7.5/ForkManager.pm)
 * [Memory::Usage](http://search.cpan.org/~doneill/Memory-Usage-0.201/lib/Memory/Usage.pm)
-* [NCBI BLAST](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/)
+* [NCBI BLAST](http://ftp.ncbi.nlm.nih.gov/blast/executables/release/)
 * [uchime (public domain version)](http://drive5.com/uchime/uchime_download.html)
 * [HMMER (hmmscan)](http://hmmer.janelia.org/)
 * [vrevcomp](http://www.microbiome.ch/web/Tools.html)
