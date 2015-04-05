@@ -1,6 +1,7 @@
 #!/usr/bin/perl
-# oclust, a pipeline for clustering long PacBio CCS reads into operational taxonomic units.
-# Oscar Franzen, <p.oscar.franzen@gmail.com>, Mt. Sinai, NY, USA.
+# -----------------------------------------------------------------------------------------
+# oclust, a pipeline for clustering sequences into Operational Taxonomic Units.           #
+# Oscar Franzen, <p.oscar.franzen@gmail.com>.                                             #
 # -----------------------------------------------------------------------------------------
 
 use strict 'vars';
@@ -31,7 +32,7 @@ use lib workaround(); # path to bundled perl modules
 use Bio::SeqIO;
 use Bio::AlignIO;
 
-if ($Config{osname} =~ /darwin/) {
+if ($Config{osname} !~ /linux/) {
 	die("oclust must be run on a Linux system.");
 }
 
