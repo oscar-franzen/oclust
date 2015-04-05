@@ -71,127 +71,126 @@ die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.osca
 
 	Usage example: -x MSA -f /home/foobar/long_reads.fasta -o /home/foobar/foo -p 4 -minl 700 -maxl 800\n\n") if (@ARGV == 0);
 
-my $opt_f;
-my $opt_o;
-my $opt_p;
-my $opt_min_length;
-my $opt_max_length;
-my $debug;
-my $random_subset;
-my $human;
-my $chimera;
-my $revcom_method;
-my $distance;
-my $hclust_algorithm;
-my $parallel_type;
+my $setting_input_file;
+my $setting_output_dir;
+my $setting_cpus;
+my $setting_min_seq_length;
+my $setting_max_seq_length;
+my $setting_debug;
+my $setting_random_subset;
+my $setting_human_contamination_check;
+my $setting_chimera_check;
+my $setting_revcom_method;
+my $setting_distance_method;
+my $setting_hclust_algorithm;
+my $setting_parallel_type;
+my $setting_lsf_nb_jobs;
+my $setting_lsf_queue;
+my $setting_lsf_time;
+my $setting_lsf_memory;
+my $setting_lsf_account;
 
-my $lsf_nb_jobs;
-my $lsf_queue;
-my $lsf_time;
-my $lsf_memory;
-my $lsf_account;
+GetOptions ("file=s" => \$setting_input_file,
+	         "out=s" => \$setting_output_dir,
+	         "proc=i" => \$setting_cpus,
+	         "minl=i" => \$setting_min_seq_length,
+	         "maxl=i" => \$setting_max_seq_length,
+	         "debug=i" => \$setting_debug,
+	         "rand=i" => \$setting_random_subset,
+	         "human=s" => \$setting_human_contamination_check,
+	         "chimera=s" => \$setting_chimera_check,
+	         "lsf_nb_jobs=i" => \$setting_lsf_nb_jobs,
+	         "lsf_queue=s" => \$setting_lsf_queue,
+	         "lsf_account=s" => \$setting_lsf_account,
+	         "lsf_time=i" => \$setting_lsf_time,
+	         "lsf_memory=i" => \$setting_lsf_memory,
+	         "lsf_account=s" => \$setting_lsf_account,
+	         "R=s" => \$setting_revcom_method,
+	         "x=s" => \$setting_distance_method,
+	         "algorithm=s" => \$setting_hclust_algorithm,
+	         "type=s" => \$setting_parallel_type) or die("Error in command line arguments\n");
 
-GetOptions ("file=s" => \$opt_f,
-	         "out=s" => \$opt_o,
-	         "proc=i" => \$opt_p,
-	         "minl=i" => \$opt_min_length,
-	         "maxl=i" => \$opt_max_length,
-	         "debug=i" => \$debug,
-	         "rand=i" => \$random_subset,
-	         "human=s" => \$human,
-	         "chimera=s" => \$chimera,
-	         "lsf_nb_jobs=i" => \$lsf_nb_jobs,
-	         "lsf_queue=s" => \$lsf_queue,
-	         "lsf_account=s" => \$lsf_account,
-	         "lsf_time=i" => \$lsf_time,
-	         "lsf_memory=i" => \$lsf_memory,
-	         "lsf_account=s" => \$lsf_account,
-	         "R=s" => \$revcom_method,
-	         "x=s" => \$distance,
-	         "algorithm=s" => \$hclust_algorithm,
-	         "type=s" => \$parallel_type) or die("Error in command line arguments\n");
-
-if ($parallel_type eq "") {
-	$parallel_type = "local";
+if ($setting_parallel_type eq "") {
+	$setting_parallel_type = "local";
 }
 
-if ($parallel_type ne "local" && $parallel_type ne "cluster") {
+if ($setting_parallel_type ne "local" && $setting_parallel_type ne "cluster") {
 	print("-t must be local or cluster\n"); exit;
 }
 
-if ($hclust_algorithm eq "") {
-	$hclust_algorithm = "complete";
+if ($setting_hclust_algorithm eq "") {
+	$setting_hclust_algorithm = "complete";
 }
 
-if ($hclust_algorithm ne "complete" && $hclust_algorithm ne "single" && $hclust_algorithm ne "average") {
+if ($setting_hclust_algorithm ne "complete" && $setting_hclust_algorithm ne "single" && $setting_hclust_algorithm ne "average") {
 	print("-a can be one of: complete, single, or average\n"); exit;
 }
 
-if ($opt_f eq "") {
+if ($setting_input_file eq "") {
 	print("Error: No fasta input file specified\n"); exit;
 }
-elsif ($opt_o eq "") {
+elsif ($setting_output_dir eq "") {
 	print("Error: No output directory specified\n"); exit;
 }
-elsif ($opt_p eq "") {
-	$opt_p = 4;
+elsif ($setting_cpus eq "") {
+	$setting_cpus = 4;
 }
 
-if ($chimera eq "") {
-	$chimera = "Y";
+if ($setting_chimera_check eq "") {
+	$setting_chimera_check = "Y";
 }
 
-if ($chimera !~ /^[YN]$/) {
+if ($setting_chimera_check !~ /^[YN]$/) {
 	die("-chimera can take options Y or N.\n");
 }
 
-if ($lsf_nb_jobs eq "") {
-	$lsf_nb_jobs = 20;
+if ($setting_lsf_nb_jobs eq "") {
+	$setting_lsf_nb_jobs = 20;
 }
 
-if ($lsf_queue eq "") {
-	$lsf_queue = "scavenger";
+if ($setting_lsf_queue eq "") {
+	$setting_lsf_queue = "scavenger";
 }
 
-if ($lsf_time eq "") {
-	$lsf_time = "1";
+if ($setting_lsf_time eq "") {
+	$setting_lsf_time = "1";
 }
 
-if ($lsf_memory eq "") {
-	$lsf_memory = 3000;
+if ($setting_lsf_memory eq "") {
+	$setting_lsf_memory = 3000;
 }
 
-if ($human eq "") {
-	$human = "Y";
+if ($setting_human_contamination_check eq "") {
+	$setting_human_contamination_check = "Y";
 }
-elsif ($human !~ /[YN]/) {
+elsif ($setting_human_contamination_check !~ /[YN]/) {
 	print("Error: The -human flag must be Y or N or not specified (switched to Y by default).\n"); exit;
 }
 
-if ($opt_o !~ /^\//) {
+if ($setting_output_dir !~ /^\//) {
 	my $current_path = `pwd`;
 	print("Error: Specify the *full* path for the output directory, not the relative.\n\nCorrect:\n\n/home/foobar/projects/my_output_directory\n\nIncorrect: ./my_output_directory\n\nThe full path to this directory is: $current_path\n\n"); exit;
 }
 
-if ($opt_f !~ /^\//) {
+if ($setting_input_file !~ /^\//) {
 	print("Error: Specify the *full* path for the input file, not the relative.\n"); exit;
 }
 
-if ($revcom_method eq "") {
-	$revcom_method = "HMM";
+if ($setting_revcom_method eq "") {
+	$setting_revcom_method = "HMM";
 }
 
-if ($revcom_method ne "HMM" && $revcom_method ne "BLAST" && $revcom_method ne "none") {
+if ($setting_revcom_method ne "HMM" && $setting_revcom_method ne "BLAST" && $setting_revcom_method ne "none") {
 	print("-R can be HMM, BLAST or none\n"); exit;
 }
 
-$distance = "MSA" if ($distance eq "");
+$setting_distance_method = "MSA" if ($setting_distance_method eq "");
 
-if ($distance ne "MSA" && $distance ne "PW") {
+if ($setting_distance_method ne "MSA" && $setting_distance_method ne "PW") {
 	print("-x must be PW or MSA.\n"); exit;
 }
 
-if ($distance eq "PW") {
+if ($setting_distance_method eq "PW") {
 	# In this system equipped with LSF?
 	my $init = `bsub -V 2>&1`;
 
@@ -202,15 +201,15 @@ if ($distance eq "PW") {
 
 # Is this a fasta file?
 ################################################################################
-my $cmd = "grep -P '^>' $opt_f";
+my $cmd = "grep -P '^>' $setting_input_file";
 
 if ($Config{osname} =~ /darwin/) {
-	$cmd = "grep '^>' $opt_f";
+	$cmd = "grep '^>' $setting_input_file";
 }
 
 my $cmd_out = `$cmd`;
 
-if ($Config{osname} =~ /darwin/ && $debug eq "") {
+if ($Config{osname} =~ /darwin/ && $setting_debug eq "") {
 	print("oclust does not support OS X at the moment."); exit;
 }
 
@@ -220,22 +219,22 @@ if ($cmd_out eq "") {
 
 # Create output directory
 ################################################################################
-if (-e $opt_o) {
-	#print("Error: output directory exists\n"); exit;
+if (-e $setting_output_dir) {
+	print("Error: output directory exists\n"); exit;
 }
 
-`mkdir $opt_o 2>/dev/null`;
+`mkdir $setting_output_dir 2>/dev/null`;
 
 # Filter on sequence length
 ################################################################################
-my $is = Bio::SeqIO->new(-file => "$opt_f", -format => 'fasta');
-my $os = Bio::SeqIO->new(-file => ">$opt_o/targets.fa", -format => 'fasta');
+my $is = Bio::SeqIO->new(-file => "$setting_input_file", -format => 'fasta');
+my $os = Bio::SeqIO->new(-file => ">$setting_output_dir/targets.fa", -format => 'fasta');
 
 my $count = 0;
 
 while (my $obj = $is->next_seq()) {
-	if ($opt_min_length ne "" && $opt_max_length ne "") {
-		if ($obj->length > $opt_min_length && $obj->length < $opt_max_length) {
+	if ($setting_min_seq_length ne "" && $setting_max_seq_length ne "") {
+		if ($obj->length > $setting_min_seq_length && $obj->length < $setting_max_seq_length) {
 			$os->write_seq($obj);
 
 			$count ++ ;
@@ -253,22 +252,22 @@ if ($count == 0) {
 
 # Pick a random subset?
 ################################################################################
-if ($random_subset ne "") {
+if ($setting_random_subset ne "") {
 	my %sequences;
 	my %sequences_random;
 
-	my $is = Bio::SeqIO->new(-file => "$opt_o/targets.fa", -format => 'fasta');
-	my $os = Bio::SeqIO->new(-file => ">$opt_o/targets.ss.fa", -format => 'fasta');
+	my $is = Bio::SeqIO->new(-file => "$setting_output_dir/targets.fa", -format => 'fasta');
+	my $os = Bio::SeqIO->new(-file => ">$setting_output_dir/targets.ss.fa", -format => 'fasta');
 
 	while (my $obj = $is->next_seq()) {
 		$sequences{$obj->display_id} = $obj;
 	}
 
-	if (keys(%sequences) < $random_subset) {
+	if (keys(%sequences) < $setting_random_subset) {
 		print("Error: There are fewer sequences available after length filtering than the random sample requested\n"); exit;
 	}
 
-	while (keys(%sequences_random) < $random_subset) {
+	while (keys(%sequences_random) < $setting_random_subset) {
 		my $r = int(rand(keys(%sequences)));
 		my $obj = $sequences{(keys(%sequences))[$r]};
 
@@ -279,25 +278,25 @@ if ($random_subset ne "") {
 		$os->write_seq($sequences_random{$rand});
 	}
 
-	print("Picked $random_subset random sequences of " . keys(%sequences) . ".\n");
+	print("Picked $setting_random_subset random sequences of " . keys(%sequences) . ".\n");
 }
 else {
-	`cp -v $opt_o/targets.fa $opt_o/targets.ss.fa`;
+	`cp -v $setting_output_dir/targets.fa $setting_output_dir/targets.ss.fa`;
 }
 
 # Reverse complement reads
 ################################################################################
 
-if ($revcom_method eq "BLAST") {
+if ($setting_revcom_method eq "BLAST") {
 	`$cwd/bin/formatdb -pF -i $cwd/db/gg_13_5_99.20000.fasta`;
 	`rm formatdb.log`;
 
 	print("Orienting sequences in the same direction. Please be patient.\n");
-	`$cwd/bin/blastall -a $opt_p -d $cwd/db/gg_13_5_99.20000.fasta -m 8 -F F -p blastn -v 1 -b 1 -e 1e-10 < $opt_o/targets.ss.fa > $opt_o/blast_screen.out`;
+	`$cwd/bin/blastall -a $setting_cpus -d $cwd/db/gg_13_5_99.20000.fasta -m 8 -F F -p blastn -v 1 -b 1 -e 1e-10 < $setting_output_dir/targets.ss.fa > $setting_output_dir/blast_screen.out`;
 
 	print("BLAST finished. Orienting sequences.\n");
 
-	open(fh, "$opt_o/blast_screen.out") or die("Cannot open $opt_o/blast_screen.out");
+	open(fh, "$setting_output_dir/blast_screen.out") or die("Cannot open $setting_output_dir/blast_screen.out");
 
 	my %list;
 	my %targets;
@@ -319,8 +318,8 @@ if ($revcom_method eq "BLAST") {
 
 	close(fh);
 
-	my $is = Bio::SeqIO->new(-file => "$opt_o/targets.ss.fa", -format => 'fasta');
-	my $os = Bio::SeqIO->new(-file => ">$opt_o/targets.ss.F.fa", -format => 'fasta');
+	my $is = Bio::SeqIO->new(-file => "$setting_output_dir/targets.ss.fa", -format => 'fasta');
+	my $os = Bio::SeqIO->new(-file => ">$setting_output_dir/targets.ss.F.fa", -format => 'fasta');
 
 	while (my $obj = $is->next_seq()) {
 		my $foo = $obj;
@@ -332,17 +331,17 @@ if ($revcom_method eq "BLAST") {
 		$os->write_seq($foo);
 	}
 }
-elsif ($revcom_method eq "HMM") {
+elsif ($setting_revcom_method eq "HMM") {
 	$ENV{PATH} = $cwd . "/bin/:" . $ENV{PATH};
 
-	my $cmd = "$cwd/bin/vrevcomp/vrevcomp.pl -t $opt_o/ -h $cwd/bin/vrevcomp/HMMs/SSU/bacteria/ -c $opt_o" . "/vrevcomp.csv -o $opt_o/" . "vrevcomp.fa $opt_o/targets.ss.fa";
+	my $cmd = "$cwd/bin/vrevcomp/vrevcomp.pl -t $setting_output_dir/ -h $cwd/bin/vrevcomp/HMMs/SSU/bacteria/ -c $setting_output_dir" . "/vrevcomp.csv -o $setting_output_dir/" . "vrevcomp.fa $setting_output_dir/targets.ss.fa";
 
 	print("Orienting...\n");
 	`$cmd`;
 
 	`rm -v progress.csv`;
 
-	open(fh, "$opt_o/vrevcomp.csv") or die("Cannot open $opt_o/vrevcomp.csv");
+	open(fh, "$setting_output_dir/vrevcomp.csv") or die("Cannot open $setting_output_dir/vrevcomp.csv");
 
 	my %list;
 	my %targets;
@@ -360,8 +359,8 @@ elsif ($revcom_method eq "HMM") {
 		}
 	}
 
-	my $is = Bio::SeqIO->new(-file => "$opt_o/targets.ss.fa", -format => 'fasta');
-	my $os = Bio::SeqIO->new(-file => ">$opt_o/targets.ss.F.fa", -format => 'fasta');
+	my $is = Bio::SeqIO->new(-file => "$setting_output_dir/targets.ss.fa", -format => 'fasta');
+	my $os = Bio::SeqIO->new(-file => ">$setting_output_dir/targets.ss.F.fa", -format => 'fasta');
 
 	while (my $obj = $is->next_seq()) {
 		my $foo = $obj;
@@ -376,15 +375,15 @@ elsif ($revcom_method eq "HMM") {
 	print("Done orienting\n");
 }
 else {
-	my $cmd = "cp -v $opt_o/targets.ss.fa $opt_o/targets.ss.F.fa";
+	my $cmd = "cp -v $setting_output_dir/targets.ss.fa $setting_output_dir/targets.ss.F.fa";
 	`$cmd`;
 }
 
 # Screen for human contamination
 ################################################################################
-if ($human eq "Y") {
-	if ($debug ne "") {
-		print("Debug: ./bin/megablast -a $opt_p -d $cwd/db/hg19.fa -m 8 -i $opt_o/targets.ss.F.fa -o $opt_o/blast_targets.hg19.out -v 10 -b 10 -e 1e-5 -F F\n");
+if ($setting_human_contamination_check eq "Y") {
+	if ($setting_debug ne "") {
+		print("Debug: ./bin/megablast -a $setting_cpus -d $cwd/db/hg19.fa -m 8 -i $setting_output_dir/targets.ss.F.fa -o $setting_output_dir/blast_targets.hg19.out -v 10 -b 10 -e 1e-5 -F F\n");
 	}
 
 	# First check if it's needed to download the human genome
@@ -422,9 +421,9 @@ if ($human eq "Y") {
 
 	print("Screening for human contamination. This may take a while.\n");
 
-	`$cwd/bin/megablast -a $opt_p -d $cwd/db/hg19.fa -m 8 -i $opt_o/targets.ss.F.fa -o $opt_o/blast_targets.hg19.out -v 10 -b 10 -e 1e-5 -F F`;
+	`$cwd/bin/megablast -a $setting_cpus -d $cwd/db/hg19.fa -m 8 -i $setting_output_dir/targets.ss.F.fa -o $setting_output_dir/blast_targets.hg19.out -v 10 -b 10 -e 1e-5 -F F`;
 
-	open(fh, "$opt_o/blast_targets.hg19.out") or die("Cannot open $opt_o/blast_targets.hg19.out");
+	open(fh, "$setting_output_dir/blast_targets.hg19.out") or die("Cannot open $setting_output_dir/blast_targets.hg19.out");
 
 	my %list;
 	my %targets;
@@ -439,8 +438,8 @@ if ($human eq "Y") {
 
 	close(fh);
 
-	my $is = Bio::SeqIO->new(-file => "$opt_o/targets.ss.F.fa", -format => 'fasta');
-	my $os = Bio::SeqIO->new(-file => ">$opt_o/targets.ss.FF.fa", -format => 'fasta');
+	my $is = Bio::SeqIO->new(-file => "$setting_output_dir/targets.ss.F.fa", -format => 'fasta');
+	my $os = Bio::SeqIO->new(-file => ">$setting_output_dir/targets.ss.FF.fa", -format => 'fasta');
 
 	while (my $obj = $is->next_seq()) {
 		if ($targets{$obj->display_id} eq "") {
@@ -450,17 +449,17 @@ if ($human eq "Y") {
 }
 else {
 	print("Skipping human contamination check.\n");
-	`cp $opt_o/targets.ss.F.fa $opt_o/targets.ss.FF.fa`;
+	`cp $setting_output_dir/targets.ss.F.fa $setting_output_dir/targets.ss.FF.fa`;
 }
 
 # Chimera detection
 ################################################################################
-if ($chimera eq "Y") {
+if ($setting_chimera_check eq "Y") {
 	print("Running chimera check.\n");
 
-	`$cwd/bin/uchime4.2.40_i86linux32 --minh 1.0 --quiet --db $cwd/db/gold.fa --input $opt_o/targets.ss.FF.fa --uchimeout $opt_o/targets.ss.FF.fa.uchime`;
+	`$cwd/bin/uchime4.2.40_i86linux32 --minh 1.0 --quiet --db $cwd/db/gold.fa --input $setting_output_dir/targets.ss.FF.fa --uchimeout $setting_output_dir/targets.ss.FF.fa.uchime`;
 
-	open(fh, "$opt_o/targets.ss.FF.fa.uchime") or die("Cannot open $opt_o/targets.ss.FF.fa.uchime");
+	open(fh, "$setting_output_dir/targets.ss.FF.fa.uchime") or die("Cannot open $setting_output_dir/targets.ss.FF.fa.uchime");
 	my %removal;
 
 	while (my $line = <fh>) {
@@ -475,8 +474,8 @@ if ($chimera eq "Y") {
 
 	print(keys(%removal) . " sequences were flaged as chimeras, these will be removed.\n");
 
-	my $is = Bio::SeqIO->new(-file => "$opt_o/targets.ss.FF.fa", -format => 'fasta');
-	my $os = Bio::SeqIO->new(-file => ">$opt_o/targets.ss.FF.no_chimeras.fa", -format => 'fasta');
+	my $is = Bio::SeqIO->new(-file => "$setting_output_dir/targets.ss.FF.fa", -format => 'fasta');
+	my $os = Bio::SeqIO->new(-file => ">$setting_output_dir/targets.ss.FF.no_chimeras.fa", -format => 'fasta');
 
 	while (my $obj = $is->next_seq()) {
 		if ($removal{$obj->display_id} eq "") {
@@ -488,7 +487,7 @@ if ($chimera eq "Y") {
 }
 else {
 	print("Skipping chimera check.\n\n");
-	`cp $opt_o/targets.ss.FF.fa $opt_o/targets.ss.FF.no_chimeras.fa`;	
+	`cp $setting_output_dir/targets.ss.FF.fa $setting_output_dir/targets.ss.FF.no_chimeras.fa`;	
 }
 
 # Remove colon from the header (needle truncates whatever is before the colon)
@@ -502,27 +501,27 @@ my $cmd = "awk \'{
 	else {
 		print(\$0)
 	}
-}' $opt_o/targets.ss.FF.no_chimeras.fa > $opt_o/targets.ss.FF.C.fa";
+}' $setting_output_dir/targets.ss.FF.no_chimeras.fa > $setting_output_dir/targets.ss.FF.C.fa";
 
 system($cmd);
 
 # Cleanup
 system("rm error.log 2> /dev/null");
 
-my $fs = -s "$opt_o/targets.ss.FF.C.fa";
+my $fs = -s "$setting_output_dir/targets.ss.FF.C.fa";
 
 if ($fs == 0) {
 	print("Error: No remaining sequences. Cannot continue.\n\n"); exit;
 }
 else {
-	print("Output files will be written to: $opt_o\n\n");
+	print("Output files will be written to: $setting_output_dir\n\n");
 }
 
 # Pairwise alignments
 ################################################################################
-if ($distance eq "PW" && $parallel_type eq "local") {
+if ($setting_distance_method eq "PW" && $setting_parallel_type eq "local") {
 	my @seqs;
-	my $is = Bio::SeqIO->new(-file => $opt_o."/targets.ss.FF.C.fa", -format => "fasta");
+	my $is = Bio::SeqIO->new(-file => $setting_output_dir."/targets.ss.FF.C.fa", -format => "fasta");
 
 	while (my $obj = $is->next_seq()) {
 		push(@seqs, $obj);
@@ -530,14 +529,14 @@ if ($distance eq "PW" && $parallel_type eq "local") {
 
 	# Number of alignments per CPU
 	# Divided by two, because performing the alignment A:B is the same as B:A.
-	my $partition = int( ((@seqs * @seqs)/2) / $opt_p);
+	my $partition = int( ((@seqs * @seqs)/2) / $setting_cpus);
 
 	print("Performing $partition pairwise alignments per CPU...\n");
 
 	my $count = 0;
 	my $file_suffix = 1;
 
-	open(my $fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
+	open(my $fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".fa");
 
 	my %done;
 
@@ -560,7 +559,7 @@ if ($distance eq "PW" && $parallel_type eq "local") {
 					if ($count > $partition) {
 						$file_suffix ++ ;
 						$count = 0;
-						open($fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
+						open($fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".fa");
 					}
 
 					$done{$c.":".$i} = 1;
@@ -570,11 +569,11 @@ if ($distance eq "PW" && $parallel_type eq "local") {
 		}
 	}
 
-	open(fh_out, ">$opt_o/" . "run_pw");
-	print(fh_out "cd $opt_o\n");
+	open(fh_out, ">$setting_output_dir/" . "run_pw");
+	print(fh_out "cd $setting_output_dir\n");
 
 	for (my $i=1; $i<=$file_suffix; $i++) {
-		my $cmd = $cwd . "bin/needleman_wunsch --printfasta --file " . $opt_o . "/partition_" . $i . ".fa > " . $opt_o . "/partition_" . $i . ".fa.fas &";
+		my $cmd = $cwd . "bin/needleman_wunsch --printfasta --file " . $setting_output_dir . "/partition_" . $i . ".fa > " . $setting_output_dir . "/partition_" . $i . ".fa.fas &";
 
 		print(fh_out "$cmd\nsleep 2s\n");
 	}
@@ -585,14 +584,14 @@ if ($distance eq "PW" && $parallel_type eq "local") {
 
 	print("Running alignments. This may take a while.\n");
 
-	my $p = $opt_o . "/run_pw";
+	my $p = $setting_output_dir . "/run_pw";
 	system("chmod +x $p; $p");
 
 	finish();
 }
-elsif ($distance eq "PW" && $parallel_type eq "cluster") {
+elsif ($setting_distance_method eq "PW" && $setting_parallel_type eq "cluster") {
 	my @seqs;
-	my $is = Bio::SeqIO->new(-file => $opt_o."/targets.ss.FF.C.fa", -format => "fasta");
+	my $is = Bio::SeqIO->new(-file => $setting_output_dir."/targets.ss.FF.C.fa", -format => "fasta");
 
 	while (my $obj = $is->next_seq()) {
 		push(@seqs, $obj);
@@ -600,14 +599,14 @@ elsif ($distance eq "PW" && $parallel_type eq "cluster") {
 
 	# Number of alignments per CPU
 	# Divided by two, because performing the alignment A:B is the same as B:A.
-	my $partition = int( ((@seqs * @seqs)/2) / $lsf_nb_jobs);
+	my $partition = int( ((@seqs * @seqs)/2) / $setting_lsf_nb_jobs);
 
 	print("Submitting $partition pairwise alignments per job...\n");
 
 	my $count = 0;
 	my $file_suffix = 1;
 
-	open(my $fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
+	open(my $fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".fa");
 
 	my %done;
 
@@ -630,7 +629,7 @@ elsif ($distance eq "PW" && $parallel_type eq "cluster") {
 					if ($count > $partition) {
 						$file_suffix ++ ;
 						$count = 0;
-						open($fh_out, ">$opt_o" . "/partition_" . $file_suffix . ".fa");
+						open($fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".fa");
 					}
 
 					$done{$c.":".$i} = 1;
@@ -640,8 +639,8 @@ elsif ($distance eq "PW" && $parallel_type eq "cluster") {
 		}
 	}
 
-	`mkdir $opt_o/jobs`;
-	`mkdir $opt_o/logs`;
+	`mkdir $setting_output_dir/jobs`;
+	`mkdir $setting_output_dir/logs`;
 
 	for (my $i=1; $i<=$file_suffix; $i++) {
 		my $job_script = "#BSUB -L /bin/bash
@@ -649,38 +648,38 @@ elsif ($distance eq "PW" && $parallel_type eq "cluster") {
 #BSUB -J oclust_".$i."
 #BSUB -oo ../logs/$i.log
 #BSUB -eo ../logs/$i.err
-#BSUB -q $lsf_queue
-#BSUB -R rusage[mem=$lsf_memory]
-#BSUB -W $lsf_time" . ":00\n";
+#BSUB -q $setting_lsf_queue
+#BSUB -R rusage[mem=$setting_lsf_memory]
+#BSUB -W $setting_lsf_time" . ":00\n";
 
-		if ($lsf_account ne "") {
-			$job_script .= "#BSUB -P $lsf_account\n";
+		if ($setting_lsf_account ne "") {
+			$job_script .= "#BSUB -P $setting_lsf_account\n";
 		}
 
-		$job_script .= "cd $opt_o\n";
-		$job_script .= $cwd . "bin/needleman_wunsch --printfasta --file " . $opt_o . "/partition_" . $i . ".fa > " . $opt_o . "/partition_" . $i . ".fa.fas\n";
+		$job_script .= "cd $setting_output_dir\n";
+		$job_script .= $cwd . "bin/needleman_wunsch --printfasta --file " . $setting_output_dir . "/partition_" . $i . ".fa > " . $setting_output_dir . "/partition_" . $i . ".fa.fas\n";
 
-		open(fh, ">".$opt_o."/jobs/$i".".job");
+		open(fh, ">".$setting_output_dir."/jobs/$i".".job");
 		print(fh $job_script);
 		close(fh);
 	}
 
-	my @files = <$opt_o/jobs/*>;
+	my @files = <$setting_output_dir/jobs/*>;
 	my @ids;
 
 	foreach my $job (@files) {
-		my $cmd = "cd $opt_o/jobs";
+		my $cmd = "cd $setting_output_dir/jobs";
 
 		$job =~ /^.+\/(\S+)$/;
 		my $fn = $1;
 
 		my $q = "$cmd; bsub < $fn";
-		#my $out = `$q`;
+		my $out = `$q`;
 
-		#$out =~ /^\S+ <(\S+)>/;
-		#my $job_id = $1;
+		$out =~ /^\S+ <(\S+)>/;
+		my $job_id = $1;
 
-		#push(@ids, $job_id);
+		push(@ids, $job_id);
 
 		print("Submitted $job\n");
 	}
@@ -689,7 +688,7 @@ elsif ($distance eq "PW" && $parallel_type eq "cluster") {
 
 	while (1) {
 		# Check if the number of completed log files correspond to the number of submitted jobs
-		my @logs = <$opt_o/logs/*.log>;
+		my @logs = <$setting_output_dir/logs/*.log>;
 		my $found_completed_logs = 0;
 
 		foreach my $log (@logs) {
@@ -707,7 +706,7 @@ elsif ($distance eq "PW" && $parallel_type eq "cluster") {
 			close(fh);
 		}
 
-		if ($found_completed_logs == $lsf_nb_jobs) {
+		if ($found_completed_logs == $setting_lsf_nb_jobs) {
 			print("All submitted jobs have completed.\n");
 			last;
 		}
@@ -737,13 +736,13 @@ else {
 
 	# Infernal-based
 	print("Running cmalign.\n");
-	my $f = $opt_o . "/targets.ss.FF.C.fa";
-	my $cmd = $cwd."bin/cmalign --cpu $opt_p -o $opt_o" . "/infernal.sto $cwd" . "bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk.cm $f 2>/dev/null >/dev/null";
+	my $f = $setting_output_dir . "/targets.ss.FF.C.fa";
+	my $cmd = $cwd."bin/cmalign --cpu $setting_cpus -o $setting_output_dir" . "/infernal.sto $cwd" . "bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk.cm $f 2>/dev/null >/dev/null";
 
 	`$cmd`;
 
 	# Convert to fasta and remove sequences without any homologous positions
-	my $in = Bio::AlignIO->new(-file => $opt_o."/infernal.sto", '-format' => 'stockholm');
+	my $in = Bio::AlignIO->new(-file => $setting_output_dir."/infernal.sto", '-format' => 'stockholm');
 	my @alignments;
 
 	while ( my $aln = $in->next_aln() ) {
@@ -794,7 +793,7 @@ else {
 		}
 	}
 
-	my $os = Bio::SeqIO->new(-file => ">" . $opt_o . "/infernal.F.fasta", -format => "fasta");
+	my $os = Bio::SeqIO->new(-file => ">" . $setting_output_dir . "/infernal.F.fasta", -format => "fasta");
 
 	print(keys(%removal) . " sequences removed\n");
 
@@ -817,16 +816,16 @@ else {
 	my $cmd = "chmod +x $cwd/bin/R/bin/R.fixed";
 	`$cmd`;
 
-	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd $opt_o"."/infernal.F.fasta $opt_o $hclust_algorithm MSA < $cwd/utils/hclust_fr_aln.R";
+	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd $setting_output_dir"."/infernal.F.fasta $setting_output_dir $setting_hclust_algorithm MSA < $cwd/utils/hclust_fr_aln.R";
 	`$cmd`;
 
-	print("*** oclust running in MSA-mode has finished. *** \nResults are in:\n$opt_o\n");
+	print("*** oclust running in MSA-mode has finished. *** \nResults are in:\n$setting_output_dir\n");
 }
 
 sub finish {
 	print("Alignments finished. Writing distance matrix.\n");
 
-	my @files = <$opt_o/*.fas>;
+	my @files = <$setting_output_dir/*.fas>;
 	my %distances;
 	my %all_ids;
 
@@ -972,7 +971,7 @@ sub finish {
 		close(fh);
 	}
 
-	open(fh_dist, ">$opt_o" . "/dist.mat");
+	open(fh_dist, ">$setting_output_dir" . "/dist.mat");
 
 	my $first_row;
 
@@ -1018,10 +1017,10 @@ sub finish {
 	my $cmd = "chmod +x $cwd/bin/R/bin/R.fixed";
 	`$cmd`;
 
-	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd $opt_o"."/dist.mat $opt_o $hclust_algorithm PW < $cwd/utils/hclust_fr_aln.R";
+	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd $setting_output_dir"."/dist.mat $setting_output_dir $setting_hclust_algorithm PW < $cwd/utils/hclust_fr_aln.R";
 	`$cmd`;
 
-	print("*** oclust running in PW-mode has finished. ***\n\n Results are in:\n$opt_o\n");
+	print("*** oclust running in PW-mode has finished. ***\n\n Results are in:\n$setting_output_dir\n");
 }
 
 sub check_file_exists {
