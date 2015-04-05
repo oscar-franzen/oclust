@@ -45,7 +45,20 @@ check_file_exists($cwd."bin/needleman_wunsch");
 check_file_exists($cwd."bin/cmbuild");
 check_file_exists($cwd."bin/cmalign");
 
-die("oclust is running on $Config{osname} ($Config{archname})\nFeedback: <p.oscar.franzen\@gmail.com>, Mount Sinai, New York, U.S.A.\n\nCommand line arguments:
+my $info;
+
+if (-e "/proc/cpuinfo") {
+	my $o=`cat /proc/cpuinfo | grep processor | tail -n1 | awk '{print \$3}'`;
+	chomp($o);
+	$o++;
+
+	$info = "oclust is running on $Config{osname} ($Config{archname}), $o CPUs are available on this system.";
+}
+else {
+	$info = "oclust is running on $Config{osname} ($Config{archname})";
+}
+
+die("$info\nFeedback: <p.oscar.franzen\@gmail.com>, Mount Sinai, New York, U.S.A.\n\nCommand line arguments:
 
 	-x <method> -f <input file> -o <output directory> -p <number of CPUs>
 
