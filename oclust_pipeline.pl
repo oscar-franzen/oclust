@@ -110,85 +110,7 @@ GetOptions ("file=s" => \$setting_input_file,
 	         "algorithm=s" => \$setting_hclust_algorithm,
 	         "type=s" => \$setting_parallel_type) or die("Error in command line arguments\n");
 
-if ($setting_parallel_type eq "") {
-	$setting_parallel_type = "local";
-}
-
-if ($setting_parallel_type ne "local" && $setting_parallel_type ne "cluster") {
-	print("-t must be local or cluster\n"); exit;
-}
-
-if ($setting_hclust_algorithm eq "") {
-	$setting_hclust_algorithm = "complete";
-}
-
-if ($setting_hclust_algorithm ne "complete" && $setting_hclust_algorithm ne "single" && $setting_hclust_algorithm ne "average") {
-	print("-a can be one of: complete, single, or average\n"); exit;
-}
-
-if ($setting_input_file eq "") {
-	print("Error: No fasta input file specified\n"); exit;
-}
-elsif ($setting_output_dir eq "") {
-	print("Error: No output directory specified\n"); exit;
-}
-elsif ($setting_cpus eq "") {
-	$setting_cpus = 4;
-}
-
-if ($setting_chimera_check eq "") {
-	$setting_chimera_check = "Y";
-}
-
-if ($setting_chimera_check !~ /^[YN]$/) {
-	die("-chimera can take options Y or N.\n");
-}
-
-if ($setting_lsf_nb_jobs eq "") {
-	$setting_lsf_nb_jobs = 20;
-}
-
-if ($setting_lsf_queue eq "") {
-	$setting_lsf_queue = "scavenger";
-}
-
-if ($setting_lsf_time eq "") {
-	$setting_lsf_time = "1";
-}
-
-if ($setting_lsf_memory eq "") {
-	$setting_lsf_memory = 3000;
-}
-
-if ($setting_human_contamination_check eq "") {
-	$setting_human_contamination_check = "Y";
-}
-elsif ($setting_human_contamination_check !~ /[YN]/) {
-	print("Error: The -human flag must be Y or N or not specified (switched to Y by default).\n"); exit;
-}
-
-if ($setting_output_dir !~ /^\//) {
-	my $current_path = `pwd`;
-	print("Error: Specify the *full* path for the output directory, not the relative.\n\nCorrect:\n\n/home/foobar/projects/my_output_directory\n\nIncorrect: ./my_output_directory\n\nThe full path to this directory is: $current_path\n\n"); exit;
-}
-
-if ($setting_input_file !~ /^\//) {
-	print("Error: Specify the *full* path for the input file, not the relative.\n"); exit;
-}
-
-if ($setting_revcom_method eq "") {
-	$setting_revcom_method = "HMM";
-}
-
-if ($setting_revcom_method ne "HMM" && $setting_revcom_method ne "BLAST" && $setting_revcom_method ne "none") {
-	print("-R can be HMM, BLAST or none\n"); exit;
-}
-
-$setting_distance_method = "MSA" if ($setting_distance_method eq "");
-
-if ($setting_distance_method ne "MSA" && $setting_distance_method ne "PW") {
-	print("-x must be PW or MSA.\n"); exit;
-}
+checkSettings();
 
 if ($setting_distance_method eq "PW") {
 	# In this system equipped with LSF?
@@ -1029,4 +951,51 @@ sub check_file_exists {
 	if (! -e $file) {
 		print("Error: $file could not be found. Terminating.\n"); exit;
 	}
+}
+
+sub checkSettings() {
+	$setting_parallel_type = "local" if ($setting_parallel_type eq "");
+
+	die("-t must be local or cluster\n") if ($setting_parallel_type ne "local" && $setting_parallel_type ne "cluster");
+
+	$setting_hclust_algorithm = "complete" if ($setting_hclust_algorithm eq "");
+
+	die("-a can be one of: complete, single, or average\n") if ($setting_hclust_algorithm ne "complete" && $setting_hclust_algorithm ne "single" && $setting_hclust_algorithm ne "average");
+
+	die("Error: No fasta input file specified\n") if ($setting_input_file eq "");
+	
+	die("Error: No output directory specified\n") if ($setting_output_dir eq "");
+	
+	$setting_cpus = 4 if ($setting_cpus eq "");
+
+	$setting_chimera_check = "Y" if ($setting_chimera_check eq "");
+
+	die("-chimera can take options Y or N.\n") if ($setting_chimera_check !~ /^[YN]$/);
+
+	$setting_lsf_nb_jobs = 20 if ($setting_lsf_nb_jobs eq "");
+
+	$setting_lsf_queue = "scavenger" if ($setting_lsf_queue eq "");
+
+	$setting_lsf_time = "1" if ($setting_lsf_time eq "");
+
+	$setting_lsf_memory = 3000 if ($setting_lsf_memory eq "");
+
+	$setting_human_contamination_check = "Y" if ($setting_human_contamination_check eq "");
+
+	die("Error: The -human flag must be Y or N or not specified (switched to Y by default).\n") if ($setting_human_contamination_check !~ /[YN]/);
+
+	if ($setting_output_dir !~ /^\//) {
+		my $current_path = `pwd`;
+		die("Error: Specify the *full* path for the output directory, not the relative.\n\nCorrect:\n\n/home/foobar/projects/my_output_directory\n\nIncorrect: ./my_output_directory\n\nThe full path to this directory is: $current_path\n\n");
+	}
+
+	die("Error: Specify the *full* path for the input file, not the relative.\n") if ($setting_input_file !~ /^\//);
+
+	$setting_revcom_method = "HMM" if ($setting_revcom_method eq "");
+
+	die("-R can be HMM, BLAST or none\n") if ($setting_revcom_method ne "HMM" && $setting_revcom_method ne "BLAST" && $setting_revcom_method ne "none");
+
+	$setting_distance_method = "MSA" if ($setting_distance_method eq "");
+
+	print("-x must be PW or MSA.\n") if ($setting_distance_method ne "MSA" && $setting_distance_method ne "PW");
 }
