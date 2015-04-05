@@ -31,6 +31,10 @@ use lib workaround(); # path to bundled perl modules
 use Bio::SeqIO;
 use Bio::AlignIO;
 
+if ($Config{osname} =~ /darwin/) {
+	die("oclust must be run on a Linux system.");
+}
+
 check_file_exists($cwd."bin/blastall");
 check_file_exists($cwd."bin/megablast");
 check_file_exists($cwd."bin/formatdb");
@@ -112,37 +116,19 @@ GetOptions ("file=s" => \$setting_input_file,
 
 checkSettings();
 
-if ($setting_distance_method eq "PW") {
-	# In this system equipped with LSF?
-	my $init = `bsub -V 2>&1`;
-
-	if ($init eq "") {
-		print("-x PW can only run on a cluster environment equipped with the LSF scheduler. Try -x MSA instead.\n\n"); exit;
-	}
-}
-
 # Is this a fasta file?
 ################################################################################
 my $cmd = "grep -P '^>' $setting_input_file";
-
-if ($Config{osname} =~ /darwin/) {
-	$cmd = "grep '^>' $setting_input_file";
-}
-
 my $cmd_out = `$cmd`;
 
-if ($Config{osname} =~ /darwin/ && $setting_debug eq "") {
-	print("oclust does not support OS X at the moment."); exit;
-}
-
 if ($cmd_out eq "") {
-	print("Error: Input file does not appear to be a fasta file\n"); exit;
+	die("Error: Input file does not appear to be a fasta file\n");
 }
 
 # Create output directory
 ################################################################################
 if (-e $setting_output_dir) {
-	print("Error: output directory exists\n"); exit;
+	die("Error: output directory exists\n");
 }
 
 `mkdir $setting_output_dir 2>/dev/null`;
@@ -998,4 +984,13 @@ sub checkSettings() {
 	$setting_distance_method = "MSA" if ($setting_distance_method eq "");
 
 	print("-x must be PW or MSA.\n") if ($setting_distance_method ne "MSA" && $setting_distance_method ne "PW");
+
+	if ($setting_distance_method eq "PW" && $setting_parallel_type eq "cluster") {
+		# In this system equipped with LSF?
+		my $init = `bsub -V 2>&1`;
+
+		if ($init eq "") {
+			die("-x PW -t cluster can only run on a cluster environment equipped with the LSF scheduler. Try -x MSA instead or -x PW -t local.\n\n");
+		}
+	}
 }
