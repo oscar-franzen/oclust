@@ -210,8 +210,7 @@ else {
 ################################################################################
 
 if ($setting_revcom_method eq "BLAST") {
-	`$cwd/bin/formatdb -pF -i $cwd/db/gg_13_5_99.20000.fasta`;
-	`rm formatdb.log`;
+	`$cwd/bin/formatdb -l /dev/null -pF -i $cwd/db/gg_13_5_99.20000.fasta`;
 
 	print("Orienting sequences in the same direction. Please be patient.\n");
 	`$cwd/bin/blastall -a $setting_cpus -d $cwd/db/gg_13_5_99.20000.fasta -m 8 -F F -p blastn -v 1 -b 1 -e 1e-10 < $setting_output_dir/targets.ss.fa > $setting_output_dir/blast_screen.out`;
@@ -334,10 +333,7 @@ if ($setting_human_contamination_check eq "Y") {
 
 		print("Formating database.\n");
 
-		my $cmd = "formatdb -pF -i $cwd" . "db/hg19.fa";
-		`$cmd`;
-
-		my $cmd = "rm $cwd" . "formatdb.log";
+		my $cmd = "formatdb -l /dev/null -pF -i $cwd" . "db/hg19.fa";
 		`$cmd`;
 	}
 
