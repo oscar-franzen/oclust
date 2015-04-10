@@ -79,7 +79,7 @@ The oclust pipeline bundles together the following open source/public domain sof
 * [HMMER (hmmscan)](http://hmmer.janelia.org/)
 * [vrevcomp](http://www.microbiome.ch/web/Tools.html)
 * [infernal](http://infernal.janelia.org/)
-* [seq-align Needleman-Wunsch implementation](https://github.com/noporpoise/seq-align)
+* [EMBOSS Needleman-Wunsch implementation](ftp://emboss.open-bio.org/pub/EMBOSS/EMBOSS-6.6.0.tar.gz)
 * [beer](http://en.wikipedia.org/wiki/India_Pale_Ale)
 
 # Help/suggestions
