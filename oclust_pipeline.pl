@@ -41,7 +41,11 @@ check_file_exists($cwd."bin/megablast");
 check_file_exists($cwd."bin/formatdb");
 check_file_exists($cwd."bin/uchime4.2.40_i86linux32");
 check_file_exists($cwd."bin/hmmscan");
-check_file_exists($cwd."bin/needleman_wunsch");
+check_file_exists($cwd."bin/needle");
+check_file_exists($cwd."bin/needle.acd");
+check_file_exists($cwd."bin/codes.english");
+check_file_exists($cwd."bin/knowntypes.standard");
+check_file_exists($cwd."bin/EDNAFULL");
 check_file_exists($cwd."bin/cmbuild");
 check_file_exists($cwd."bin/cmalign");
 
@@ -445,67 +449,126 @@ if ($setting_distance_method eq "PW" && $setting_parallel_type eq "local") {
 		push(@seqs, $obj);
 	}
 
-	# Number of alignments per CPU
-	# Divided by two, because performing the alignment A:B is the same as B:A.
-	my $partition = int( ((@seqs * @seqs)/2) / $setting_cpus);
-
-	print("Performing $partition pairwise alignments per CPU...\n");
-
-	my $count = 0;
-	my $file_suffix = 1;
-
-	open(my $fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".fa");
+	$ENV{EMBOSS_ACDROOT} = $cwd . "/bin/";
 
 	my %done;
 
 	for (my $i=0; $i<@seqs; $i++) {
 		my $seq1 = @seqs[$i];
 
+		# Write this sequence
+		open(fh_out, ">$setting_output_dir" . "/q_" . $i . ".fa");
+		print(fh_out ">". $seq1->display_id . "\n");
+		print(fh_out $seq1->seq . "\n");
+		close(fh_out);
+
+		open(fh_out, ">$setting_output_dir" . "/t_" . $i . ".fa");
+
+		# Write the db
 		for (my $c=0; $c<@seqs; $c++) {
 			my $seq2 = @seqs[$c];
 
 			if ($i != $c) {
-				if ($done{$c.":".$i} eq "") {
-					print($fh_out ">".$seq1->display_id . "\n");
-					print($fh_out $seq1->seq . "\n");
+				if ($done{$seq1->display_id . "-" . $seq2->display_id} eq "") {
+					print(fh_out ">". $seq2->display_id . "\n");
+					print(fh_out $seq2->seq . "\n");
 
-					print($fh_out ">".$seq2->display_id . "\n");
-					print($fh_out $seq2->seq . "\n");
-
-					$count ++ ;
-
-					if ($count > $partition) {
-						$file_suffix ++ ;
-						$count = 0;
-						open($fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".fa");
-					}
-
-					$done{$c.":".$i} = 1;
-					$done{$i.":".$c} = 1;
+					# Mark comparison as done
+					$done{$seq1->display_id . "-" . $seq2->display_id} = 1;
+					$done{$seq2->display_id . "-" . $seq1->display_id} = 1;
 				}
 			}
 		}
+
+		close(fh_out);
 	}
 
-	open(fh_out, ">$setting_output_dir/" . "run_pw");
-	print(fh_out "cd $setting_output_dir\n");
+	print("Running $setting_cpus threads.\n");
 
-	for (my $i=1; $i<=$file_suffix; $i++) {
-		my $cmd = $cwd . "bin/needleman_wunsch --printfasta --file " . $setting_output_dir . "/partition_" . $i . ".fa > " . $setting_output_dir . "/partition_" . $i . ".fa.fas &";
+	# Bundle them together into jobs
+	my $partition = int( @seqs / $setting_cpus );
+	my $file_suffix = 1;
+	my $count = 0;
+	open(my $fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".job");
 
-		print(fh_out "$cmd\nsleep 2s\n");
+	my @files = <$setting_output_dir/t_*.fa>;
+
+	foreach my $file (@files) {
+		my $size = -s $file;
+		$count ++ ;
+
+		if ($size > 0) {
+			my $query = $file;
+			my $db = $file;
+
+			$query =~ s/\/t_/\/q_/;
+
+			if ($count > $partition) {
+				$file_suffix ++ ;
+
+				open($fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".job");
+			}
+
+			my $cmd = $cwd . "bin/needle -asequence query.fa -bsequence db.fa -datafile " . $cwd . "bin/EDNAFULL -auto -stdout -aformat3 fasta";
+			print($fh_out "$cmd\n");
+		}
 	}
 
-	print(fh_out "wait");
+	# while (@seqs != 0) {
+	# 	my $item = pop(@seqs);
+	# 	$count ++ ;
 
-	close(fh_out);
+	
 
-	print("Running alignments. This may take a while.\n");
+	# 	if ($done{$item->display_id} eq "") {
+			
+	# 	}
+	# }
 
-	my $p = $setting_output_dir . "/run_pw";
-	system("chmod +x $p; $p");
+	# for (my $i=0; $i<@seqs; $i++) {
+	# 	my $seq1 = @seqs[$i];
 
-	finish();
+	# 	for (my $c=0; $c<@seqs; $c++) {
+	# 		my $seq2 = @seqs[$c];
+
+	# 		if ($i != $c) {
+	# 			if ($done{$c.":".$i} eq "") {
+	# 				print($fh_out ">".$seq1->display_id . "\n");
+	# 				print($fh_out $seq1->seq . "\n");
+
+	# 				print($fh_out ">".$seq2->display_id . "\n");
+	# 				print($fh_out $seq2->seq . "\n");
+
+
+
+	
+
+	# 				$done{$c.":".$i} = 1;
+	# 				$done{$i.":".$c} = 1;
+	# 			}
+	# 		}
+	# 	}
+	# }
+
+	# open(fh_out, ">$setting_output_dir/" . "run_pw");
+	# print(fh_out "cd $setting_output_dir\n");
+
+	# for (my $i=1; $i<=$file_suffix; $i++) {
+	# 	my $cmd = $cwd . "bin/needleman_wunsch --printfasta --file " . $setting_output_dir . "/partition_" . $i . ".fa > " . $setting_output_dir . "/partition_" . $i . ".fa.fas &";
+
+	# 	print(fh_out "$cmd\nsleep 2s\n");
+	# }
+
+	# print(fh_out "wait");
+
+	# close(fh_out);
+
+	# print("Running alignments. This may take a while.\n");
+
+	# my $p = $setting_output_dir . "/run_pw";
+	# system("chmod +x $p; $p");
+
+	# finish();
 }
 elsif ($setting_distance_method eq "PW" && $setting_parallel_type eq "cluster") {
 	my @seqs;
