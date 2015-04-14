@@ -43,7 +43,8 @@ for example using the 'fastq_to_fasta' script:
                                or MSA for multiple sequence alignment (based on
                                Infernal). [MSA]
    -t local or cluster        If -x is PW, should it be parallelized by running it locally
-                               on multiple cores or by submitting jobs to a cluster. [local]
+                               on multiple cores or by submitting jobs to a cluster
+                               (requires a system with the LSF scheduler). [local]
    -a complete, average or    The desired clustering algorithm. [complete]
        single    
    -f [string]                Input fasta file.
