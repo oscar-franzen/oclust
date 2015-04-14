@@ -49,6 +49,9 @@ check_file_exists($cwd."bin/EDNAFULL");
 check_file_exists($cwd."bin/cmbuild");
 check_file_exists($cwd."bin/cmalign");
 
+# emboss-specific environmental variable
+$ENV{EMBOSS_ACDROOT} = $cwd . "/bin/";
+
 my $info;
 
 if (-e "/proc/cpuinfo") {
@@ -442,88 +445,9 @@ else {
 # Pairwise alignments
 ################################################################################
 if ($setting_distance_method eq "PW" && $setting_parallel_type eq "local") {
-	my @seqs;
-	my $is = Bio::SeqIO->new(-file => $setting_output_dir."/targets.ss.FF.C.fa", -format => "fasta");
-
-	while (my $obj = $is->next_seq()) {
-		push(@seqs, $obj);
-	}
-
-	$ENV{EMBOSS_ACDROOT} = $cwd . "/bin/";
-
-	my %done;
-
-	for (my $i=0; $i<@seqs; $i++) {
-		my $seq1 = @seqs[$i];
-
-		# Write this sequence
-		open(fh_out, ">$setting_output_dir" . "/q_" . $i . ".fa");
-		print(fh_out ">". $seq1->display_id . "\n");
-		print(fh_out $seq1->seq . "\n");
-		close(fh_out);
-
-		open(fh_out, ">$setting_output_dir" . "/t_" . $i . ".fa");
-
-		# Write the db
-		for (my $c=0; $c<@seqs; $c++) {
-			my $seq2 = @seqs[$c];
-
-			if ($i != $c) {
-				if ($done{$seq1->display_id . "-" . $seq2->display_id} eq "") {
-					print(fh_out ">". $seq2->display_id . "\n");
-					print(fh_out $seq2->seq . "\n");
-
-					# Mark comparison as done
-					$done{$seq1->display_id . "-" . $seq2->display_id} = 1;
-					$done{$seq2->display_id . "-" . $seq1->display_id} = 1;
-				}
-			}
-		}
-
-		close(fh_out);
-	}
-
 	print("Running $setting_cpus threads.\n");
 
-	# Bundle them together into jobs
-	my $partition = int( @seqs / $setting_cpus );
-	my $file_suffix = 1;
-	my $count = 0;
-	my $out_suffix = 0;
-
-	open(my $fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".job");
-
-	my @files = <$setting_output_dir/t_*.fa>;
-
-	fisher_yates_shuffle( \@files );
-
-	foreach my $file (@files) {
-		my $size = -s $file;
-		$count ++ ;
-
-		if ($size > 0) {
-			my $query = $file;
-			my $db = $file;
-
-			$query =~ s/\/t_/\/q_/;
-
-			if ($count > $partition) {
-				$file_suffix ++ ;
-				$count = 0;
-
-				close($fh_out);
-				open($fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".job");
-			}
-
-			$out_suffix ++ ;
-
-			my $cmd = $cwd . "bin/needle -asequence $query -bsequence $db -datafile " . $cwd . "bin/EDNAFULL -auto -stdout -aformat3 fasta > $setting_output_dir/" . "needle_" . $out_suffix . ".aln";
-
-			print($fh_out "$cmd\n");
-		}
-	}
-
-	close($fh_out);
+	preprocess($setting_cpus);
 
 	my @files = <$setting_output_dir/*.job>;
 
@@ -552,62 +476,24 @@ if ($setting_distance_method eq "PW" && $setting_parallel_type eq "local") {
 	finish();
 }
 elsif ($setting_distance_method eq "PW" && $setting_parallel_type eq "cluster") {
-	my @seqs;
-	my $is = Bio::SeqIO->new(-file => $setting_output_dir."/targets.ss.FF.C.fa", -format => "fasta");
+	preprocess($setting_lsf_nb_jobs);
 
-	while (my $obj = $is->next_seq()) {
-		push(@seqs, $obj);
-	}
-
-	# Number of alignments per CPU
-	# Divided by two, because performing the alignment A:B is the same as B:A.
-	my $partition = int( ((@seqs * @seqs)/2) / $setting_lsf_nb_jobs);
-
-	print("Submitting $partition pairwise alignments per job...\n");
-
-	my $count = 0;
-	my $file_suffix = 1;
-
-	open(my $fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".fa");
-
-	my %done;
-
-	for (my $i=0; $i<@seqs; $i++) {
-		my $seq1 = @seqs[$i];
-
-		for (my $c=0; $c<@seqs; $c++) {
-			my $seq2 = @seqs[$c];
-
-			if ($i != $c) {
-				if ($done{$c.":".$i} eq "") {
-					print($fh_out ">".$seq1->display_id . "\n");
-					print($fh_out $seq1->seq . "\n");
-
-					print($fh_out ">".$seq2->display_id . "\n");
-					print($fh_out $seq2->seq . "\n");
-
-					$count ++ ;
-
-					if ($count > $partition) {
-						$file_suffix ++ ;
-						$count = 0;
-						open($fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".fa");
-					}
-
-					$done{$c.":".$i} = 1;
-					$done{$i.":".$c} = 1;
-				}
-			}
-		}
-	}
+ 	print("Submitting up to $setting_lsf_nb_jobs jobs.\n");
 
 	`mkdir $setting_output_dir/jobs`;
 	`mkdir $setting_output_dir/logs`;
 
-	for (my $i=1; $i<=$file_suffix; $i++) {
+	my @files = <$setting_output_dir/partition*.job>;
+
+	my $i = 0;
+	foreach my $file (@files) {
+		`chmod +x $file`;
+
+		$i ++ ;
+
 		my $job_script = "#BSUB -L /bin/bash
 #BSUB -n 1
-#BSUB -J oclust_".$i."
+#BSUB -J oclust_job_".$i."
 #BSUB -oo ../logs/$i.log
 #BSUB -eo ../logs/$i.err
 #BSUB -q $setting_lsf_queue
@@ -618,8 +504,7 @@ elsif ($setting_distance_method eq "PW" && $setting_parallel_type eq "cluster") 
 			$job_script .= "#BSUB -P $setting_lsf_account\n";
 		}
 
-		$job_script .= "cd $setting_output_dir\n";
-		$job_script .= $cwd . "bin/needleman_wunsch --printfasta --file " . $setting_output_dir . "/partition_" . $i . ".fa > " . $setting_output_dir . "/partition_" . $i . ".fa.fas\n";
+		$job_script .= "export EMBOSS_ACDROOT=$cwd" . "/bin\n" . $file . "\n";
 
 		open(fh, ">".$setting_output_dir."/jobs/$i".".job");
 		print(fh $job_script);
@@ -676,7 +561,7 @@ elsif ($setting_distance_method eq "PW" && $setting_parallel_type eq "cluster") 
 		sleep(60);
 	}
 
-	finish();
+# 	finish();
 }
 else {
 	# Build the covariance model
@@ -1049,4 +934,87 @@ sub fisher_yates_shuffle {
         my $j = int rand ($i+1);
         @$deck[$i,$j] = @$deck[$j,$i];
     }
+}
+
+sub preprocess {
+	my $batches = shift;
+
+	my @seqs;
+	my $is = Bio::SeqIO->new(-file => $setting_output_dir."/targets.ss.FF.C.fa", -format => "fasta");
+
+	while (my $obj = $is->next_seq()) {
+		push(@seqs, $obj);
+	}
+
+	my %done;
+
+	for (my $i=0; $i<@seqs; $i++) {
+		my $seq1 = @seqs[$i];
+
+		# Write this sequence
+		open(fh_out, ">$setting_output_dir" . "/q_" . $i . ".fa");
+		print(fh_out ">". $seq1->display_id . "\n");
+		print(fh_out $seq1->seq . "\n");
+		close(fh_out);
+
+		open(fh_out, ">$setting_output_dir" . "/t_" . $i . ".fa");
+
+		# Write the db
+		for (my $c=0; $c<@seqs; $c++) {
+			my $seq2 = @seqs[$c];
+
+			if ($i != $c) {
+				if ($done{$seq1->display_id . "-" . $seq2->display_id} eq "") {
+					print(fh_out ">". $seq2->display_id . "\n");
+					print(fh_out $seq2->seq . "\n");
+
+					# Mark comparison as done
+					$done{$seq1->display_id . "-" . $seq2->display_id} = 1;
+					$done{$seq2->display_id . "-" . $seq1->display_id} = 1;
+				}
+			}
+		}
+
+		close(fh_out);
+	}
+
+	# Bundle them together into jobs
+	my $partition = int( @seqs / $batches );
+	my $file_suffix = 1;
+	my $count = 0;
+	my $out_suffix = 0;
+
+	open(my $fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".job");
+
+	my @files = <$setting_output_dir/t_*.fa>;
+
+	fisher_yates_shuffle( \@files );
+
+	foreach my $file (@files) {
+		my $size = -s $file;
+		$count ++ ;
+
+		if ($size > 0) {
+			my $query = $file;
+			my $db = $file;
+
+			$query =~ s/\/t_/\/q_/;
+
+			if ($count > $partition) {
+				$file_suffix ++ ;
+				$count = 0;
+
+				close($fh_out);
+				open($fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".job");
+			}
+
+			$out_suffix ++ ;
+
+			my $cmd = $cwd . "bin/needle -asequence $query -bsequence $db -datafile " . $cwd . "bin/EDNAFULL -auto -stdout -aformat3 fasta > $setting_output_dir/" . "needle_" . $out_suffix . ".aln";
+
+			print($fh_out "$cmd\n");
+		}
+	}
+
+	close($fh_out);
 }
