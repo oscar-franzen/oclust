@@ -495,6 +495,8 @@ if ($setting_distance_method eq "PW" && $setting_parallel_type eq "local") {
 
 	my @files = <$setting_output_dir/t_*.fa>;
 
+	fisher_yates_shuffle( \@files );
+
 	foreach my $file (@files) {
 		my $size = -s $file;
 		$count ++ ;
@@ -507,6 +509,7 @@ if ($setting_distance_method eq "PW" && $setting_parallel_type eq "local") {
 
 			if ($count > $partition) {
 				$file_suffix ++ ;
+				$count = 0;
 
 				open($fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".job");
 			}
@@ -514,22 +517,29 @@ if ($setting_distance_method eq "PW" && $setting_parallel_type eq "local") {
 			$out_suffix ++ ;
 
 			my $cmd = $cwd . "bin/needle -asequence $query.fa -bsequence $db.fa -datafile " . $cwd . "bin/EDNAFULL -auto -stdout -aformat3 fasta > $setting_output_dir/" . "needle_" . $out_suffix . ".aln";
+
 			print($fh_out "$cmd\n");
 		}
 	}
 
-	# open(fh_out, ">$setting_output_dir/" . "run_pw");
-	# print(fh_out "cd $setting_output_dir\n");
+	my @files = <$setting_output_dir/*.job>;
 
-	# for (my $i=1; $i<=$file_suffix; $i++) {
-	# 	my $cmd = $cwd . "bin/needleman_wunsch --printfasta --file " . $setting_output_dir . "/partition_" . $i . ".fa > " . $setting_output_dir . "/partition_" . $i . ".fa.fas &";
+	foreach my $job (@files) {
+		`chmod +x $job`;
+	}
 
-	# 	print(fh_out "$cmd\nsleep 2s\n");
-	# }
+	my @files = <$setting_output_dir/partition*.job>;
 
-	# print(fh_out "wait");
+	open(fh_out, ">$setting_output_dir/" . "run_pw");
+	print(fh_out "cd $setting_output_dir\n");
 
-	# close(fh_out);
+	foreach my $file (@files) {
+		print(fh_out "$file &\nsleep 2s\n");
+	}
+
+	print(fh_out "wait");
+
+	close(fh_out);
 
 	# print("Running alignments. This may take a while.\n");
 
@@ -1034,4 +1044,13 @@ sub checkSettings() {
 			die("-x PW -t cluster can only run on a cluster environment equipped with the LSF scheduler. Try -x MSA instead or -x PW -t local.\n\n");
 		}
 	}
+}
+
+sub fisher_yates_shuffle {
+    my $deck = shift;
+    my $i = @$deck;
+    while ($i--) {
+        my $j = int rand ($i+1);
+        @$deck[$i,$j] = @$deck[$j,$i];
+    }
 }
