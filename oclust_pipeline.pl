@@ -511,16 +511,19 @@ if ($setting_distance_method eq "PW" && $setting_parallel_type eq "local") {
 				$file_suffix ++ ;
 				$count = 0;
 
+				close($fh_out);
 				open($fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".job");
 			}
 
 			$out_suffix ++ ;
 
-			my $cmd = $cwd . "bin/needle -asequence $query.fa -bsequence $db.fa -datafile " . $cwd . "bin/EDNAFULL -auto -stdout -aformat3 fasta > $setting_output_dir/" . "needle_" . $out_suffix . ".aln";
+			my $cmd = $cwd . "bin/needle -asequence $query -bsequence $db -datafile " . $cwd . "bin/EDNAFULL -auto -stdout -aformat3 fasta > $setting_output_dir/" . "needle_" . $out_suffix . ".aln";
 
 			print($fh_out "$cmd\n");
 		}
 	}
+
+	close($fh_out);
 
 	my @files = <$setting_output_dir/*.job>;
 
@@ -534,17 +537,17 @@ if ($setting_distance_method eq "PW" && $setting_parallel_type eq "local") {
 	print(fh_out "cd $setting_output_dir\n");
 
 	foreach my $file (@files) {
-		print(fh_out "$file &\nsleep 2s\n");
+		print(fh_out "$file &\nsleep 0.2s\n");
 	}
 
 	print(fh_out "wait");
 
 	close(fh_out);
 
-	# print("Running alignments. This may take a while.\n");
+	print("Running alignments. This may take a while.\n");
 
-	# my $p = $setting_output_dir . "/run_pw";
-	# system("chmod +x $p; $p");
+	my $p = $setting_output_dir . "/run_pw";
+	system("chmod +x $p; $p");
 
 	# finish();
 }
