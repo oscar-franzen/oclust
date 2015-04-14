@@ -82,5 +82,5 @@ The oclust pipeline bundles together the following open source/public domain sof
 * [EMBOSS Needleman-Wunsch implementation (needle)](http://emboss.sourceforge.net/), compiled with: `./configure --prefix=~/e/ --disable-shared --without-mysql --without-postgresql --without-axis2c --without-hpdf --without-x --without-pngdriver`
 * [beer](http://en.wikipedia.org/wiki/India_Pale_Ale)
 
-# Help/suggestions
+# Contact
 * p.oscar.franzen at gmail.com
