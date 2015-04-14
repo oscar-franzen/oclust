@@ -3,8 +3,8 @@ A pipeline for clustering long 16S rRNA sequencing reads, or any sequences, into
 [Operational Taxonomic Units](http://en.wikipedia.org/wiki/Operational_taxonomic_unit).
 
 # Requirements
-* Linux, v.2.6.x
-* Perl 5, v.5.10.1
+* Linux v.2.6.x
+* Perl v.5.10.1
 * A computer cluster with the LSF scheduler if you want to run the Needleman-Wunsch alignments.
 
 # Input files
