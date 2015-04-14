@@ -146,7 +146,7 @@ if ($cmd_out eq "") {
 # Create output directory
 ################################################################################
 if (-e $setting_output_dir) {
-	die("Error: output directory exists\n");
+	#die("Error: output directory exists\n");
 }
 
 `mkdir $setting_output_dir 2>/dev/null`;
@@ -547,9 +547,9 @@ if ($setting_distance_method eq "PW" && $setting_parallel_type eq "local") {
 	print("Running alignments. This may take a while.\n");
 
 	my $p = $setting_output_dir . "/run_pw";
-	system("chmod +x $p; $p");
+	#system("chmod +x $p; $p");
 
-	# finish();
+	finish();
 }
 elsif ($setting_distance_method eq "PW" && $setting_parallel_type eq "cluster") {
 	my @seqs;
@@ -785,127 +785,122 @@ else {
 }
 
 sub finish {
-	print("Alignments finished. Writing distance matrix.\n");
+	print("Alignment has finished. Writing distance matrix.\n");
 
-	my @files = <$setting_output_dir/*.fas>;
+	my @files = <$setting_output_dir/*.aln>;
 	my %distances;
 	my %all_ids;
 
 	foreach my $file (@files) {
-		open(fh, "$file\n");
+		my $is = Bio::SeqIO->new(-file => $file, -format => "fasta");
 
-		while (my $id1 = <fh>) {
-			my $str1 = <fh>;
+		while (my $obj1 = $is->next_seq()) {
+			my $obj2 = $is->next_seq();
 
-			my $id2 = <fh>;
-			my $str2 = <fh>;
-
-			chomp($id1);
-			chomp($id2);
+			my $id1 = $obj1->display_id;
+			my $id2 = $obj2->display_id;
 
 			$all_ids{$id1} = 1;
 			$all_ids{$id2} = 1;
 
-			chomp($str1);
-			chomp($str2);
-
-			<fh>; # blank line
+			my $seq1 = $obj1->seq;
+			my $seq2 = $obj2->seq;
 
 			# Remove terminal gaps
-			$str1 = uc($str1);
-			$str2 = uc($str2);
+			$seq1 = uc($seq1);
+			$seq2 = uc($seq2);
 
-			if ($str1 =~ /^\-/) {
-				$str1 =~ /^(-+)(\S+)/;
+			if ($seq1 =~ /^\-/) {
+				$seq1 =~ /^(-+)(\S+)/;
 				my $gaps_str = $1;
-				$str1 = $2;
-				$str2 = substr($str2, length($gaps_str), length($str2));
+				$seq1 = $2;
+				$seq2 = substr($seq2, length($gaps_str), length($seq2));
 			}
 
-			if ($str2 =~ /^\-/) {
-				$str2 =~ /^(-+)(\S+)/;
+			if ($seq2 =~ /^\-/) {
+				$seq2 =~ /^(-+)(\S+)/;
 				my $gaps_str = $1;
-				$str2 = $2;
-				$str1 = substr($str1, length($gaps_str), length($str1));
+				$seq2 = $2;
+				$seq1 = substr($seq1, length($gaps_str), length($seq1));
 			}
 
-			if ($str1 =~ /\-+$/) {
-				$str1 =~ /(\-+)$/;
+			if ($seq1 =~ /\-+$/) {
+				$seq1 =~ /(\-+)$/;
 				my $gaps_str = $1;
 
-				$str1 = substr($str1, 0, length($str1) - length($gaps_str));
-				$str2 = substr($str2, 0, length($str2) - length($gaps_str));
+				$seq1 = substr($seq1, 0, length($seq1) - length($gaps_str));
+				$seq2 = substr($seq2, 0, length($seq2) - length($gaps_str));
 			}
 
-			if ($str2 =~ /\-+$/) {
-				$str2 =~ /(\-+)$/;
+			if ($seq2 =~ /\-+$/) {
+				$seq2 =~ /(\-+)$/;
 				my $gaps_str = $1;
 
-				$str2 = substr($str2, 0, length($str2) - length($gaps_str));
-				$str1 = substr($str1, 0, length($str1) - length($gaps_str));
+				$seq2 = substr($seq2, 0, length($seq2) - length($gaps_str));
+				$seq1 = substr($seq1, 0, length($seq1) - length($gaps_str));
 			}
 
 			# Delete single base indels
 			my @positions_to_delete;
 
-			while ($str2 =~ m/[ATGC](-)[ATGC]/g) {
-				my $p = pos($str2);
+			while ($seq2 =~ m/[ATGC](-)[ATGC]/g) {
+				my $p = pos($seq2);
 				push(@positions_to_delete, $p - 2);
 			}
 
 			for (my $i=@positions_to_delete-1; $i>=0; $i--) {
 				my $item = @positions_to_delete[$i];
 				
-				substr($str1, $item, 1) = "";
-				substr($str2, $item, 1) = "";
+				substr($seq1, $item, 1) = "";
+				substr($seq2, $item, 1) = "";
 			}
 
 			my @positions_to_delete;
 
-			while ($str1 =~ m/[ATGC](-)[ATGC]/g) {
-				my $p = pos($str1);
+			while ($seq1 =~ m/[ATGC](-)[ATGC]/g) {
+				my $p = pos($seq1);
 				push(@positions_to_delete, $p - 2);
 			}
 
 			for (my $i=@positions_to_delete-1; $i>=0; $i--) {
 				my $item = @positions_to_delete[$i];
 				
-				substr($str1, $item, 1) = "";
-				substr($str2, $item, 1) = "";
+				substr($seq1, $item, 1) = "";
+				substr($seq2, $item, 1) = "";
 			}
 
 			# Delete indels larger than 4
 			my @positions_to_delete;
 
-			while ($str1 =~ m/[ATGC](-{5,})[ATGC]/g) {
-				my $del_start = pos($str1) - length($1);
+			while ($seq1 =~ m/[ATGC](-{5,})[ATGC]/g) {
+				my $del_start = pos($seq1) - length($1);
 				push(@positions_to_delete, { del_start => $del_start, del_len => length($1) });
 			}
 
 			 for (my $i=@positions_to_delete-1; $i>=0; $i--) {
 				my $item = @positions_to_delete[$i];
 				
-				substr($str1, $item->{del_start} - 1, $item->{del_len}) = "";
-				substr($str2, $item->{del_start} - 1, $item->{del_len}) = "";
+				substr($seq1, $item->{del_start} - 1, $item->{del_len}) = "";
+				substr($seq2, $item->{del_start} - 1, $item->{del_len}) = "";
 			}
 
 			my @positions_to_delete;
 
-			while ($str2 =~ m/[ATGC](-{5,})[ATGC]/g) {
-				my $del_start = pos($str2) - length($1);
+			while ($seq2 =~ m/[ATGC](-{5,})[ATGC]/g) {
+				my $del_start = pos($seq2) - length($1);
 				push(@positions_to_delete, { del_start => $del_start, del_len => length($1) });
 			}
 
 			 for (my $i=@positions_to_delete-1; $i>=0; $i--) {
 				my $item = @positions_to_delete[$i];
 				
-				substr($str1, $item->{del_start} - 1, $item->{del_len}) = "";
-				substr($str2, $item->{del_start} - 1, $item->{del_len}) = "";
+				substr($seq1, $item->{del_start} - 1, $item->{del_len}) = "";
+				substr($seq2, $item->{del_start} - 1, $item->{del_len}) = "";
 			}
 
 			# Calc identity
-			my @t1 = split(//, $str1);
-			my @t2 = split(//, $str2);
+			my @t1 = split(//, $seq1);
+			my @t2 = split(//, $seq2);
 
 			my $differences = 0;
 			my $total = 0;
@@ -929,8 +924,6 @@ sub finish {
 
 			$distances{$id1}{$id2} = $fraction_differences;
 		}
-
-		close(fh);
 	}
 
 	open(fh_dist, ">$setting_output_dir" . "/dist.mat");
