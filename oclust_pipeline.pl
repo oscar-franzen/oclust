@@ -489,6 +489,8 @@ if ($setting_distance_method eq "PW" && $setting_parallel_type eq "local") {
 	my $partition = int( @seqs / $setting_cpus );
 	my $file_suffix = 1;
 	my $count = 0;
+	my $out_suffix = 0;
+
 	open(my $fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".job");
 
 	my @files = <$setting_output_dir/t_*.fa>;
@@ -509,46 +511,12 @@ if ($setting_distance_method eq "PW" && $setting_parallel_type eq "local") {
 				open($fh_out, ">$setting_output_dir" . "/partition_" . $file_suffix . ".job");
 			}
 
-			my $cmd = $cwd . "bin/needle -asequence query.fa -bsequence db.fa -datafile " . $cwd . "bin/EDNAFULL -auto -stdout -aformat3 fasta";
+			$out_suffix ++ ;
+
+			my $cmd = $cwd . "bin/needle -asequence $query.fa -bsequence $db.fa -datafile " . $cwd . "bin/EDNAFULL -auto -stdout -aformat3 fasta > $setting_output_dir/" . "needle_" . $out_suffix . ".aln";
 			print($fh_out "$cmd\n");
 		}
 	}
-
-	# while (@seqs != 0) {
-	# 	my $item = pop(@seqs);
-	# 	$count ++ ;
-
-	
-
-	# 	if ($done{$item->display_id} eq "") {
-			
-	# 	}
-	# }
-
-	# for (my $i=0; $i<@seqs; $i++) {
-	# 	my $seq1 = @seqs[$i];
-
-	# 	for (my $c=0; $c<@seqs; $c++) {
-	# 		my $seq2 = @seqs[$c];
-
-	# 		if ($i != $c) {
-	# 			if ($done{$c.":".$i} eq "") {
-	# 				print($fh_out ">".$seq1->display_id . "\n");
-	# 				print($fh_out $seq1->seq . "\n");
-
-	# 				print($fh_out ">".$seq2->display_id . "\n");
-	# 				print($fh_out $seq2->seq . "\n");
-
-
-
-	
-
-	# 				$done{$c.":".$i} = 1;
-	# 				$done{$i.":".$c} = 1;
-	# 			}
-	# 		}
-	# 	}
-	# }
 
 	# open(fh_out, ">$setting_output_dir/" . "run_pw");
 	# print(fh_out "cd $setting_output_dir\n");
