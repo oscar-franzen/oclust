@@ -146,7 +146,7 @@ if ($cmd_out eq "") {
 # Create output directory
 ################################################################################
 if (-e $setting_output_dir) {
-	#die("Error: output directory exists\n");
+	die("Error: output directory exists\n");
 }
 
 `mkdir $setting_output_dir 2>/dev/null`;
@@ -547,7 +547,7 @@ if ($setting_distance_method eq "PW" && $setting_parallel_type eq "local") {
 	print("Running alignments. This may take a while.\n");
 
 	my $p = $setting_output_dir . "/run_pw";
-	#system("chmod +x $p; $p");
+	system("chmod +x $p; $p");
 
 	finish();
 }
