@@ -553,7 +553,7 @@ elsif ($setting_distance_method eq "PW" && $setting_parallel_type eq "cluster") 
 			close(fh);
 		}
 
-		if ($found_completed_logs == $setting_lsf_nb_jobs) {
+		if ($found_completed_logs == @files) {
 			print("All submitted jobs have completed.\n");
 			last;
 		}
@@ -561,7 +561,7 @@ elsif ($setting_distance_method eq "PW" && $setting_parallel_type eq "cluster") 
 		sleep(60);
 	}
 
-# 	finish();
+	finish();
 }
 else {
 	# Build the covariance model
