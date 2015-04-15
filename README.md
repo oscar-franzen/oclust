@@ -8,13 +8,14 @@ A pipeline for clustering long 16S rRNA sequencing reads, or any sequences, into
 
 # Input files
 The only input file to oclust is a file in FASTA format containing the sequencing reads to be
-clustered. There is no support for FASTQ format, etc. If your data is in FASTQ, you can to FASTA
-for example using the 'fastq_to_fasta' script:
+clustered.
+
+FASTQ files can be converted to FASTA:
 
 ```
    $ cd utils
-   $ chmod +x fastq_to_fasta
-   $ fastq_to_fasta my_fastq.fq my_fasta.fasta
+   $ chmod +x fastq_to_fasta.pl
+   $ ./fastq_to_fasta.pl file.fastq > file.fasta
 ```
 
 # Installation
