@@ -69,7 +69,7 @@ for example using the 'fastq_to_fasta' script:
 # Dependencies
 The oclust pipeline bundles together the following open source/public domain software:
 
-* [R](http://www.r-project.org), compiled with: `./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no`
+* [R](http://www.r-project.org), compiled with: `$ ./configure --prefix=~/R/ --enable-static=yes --with-x=no --with-tcltk=no`
 * [The seqinr R package](http://cran.r-project.org/web/packages/seqinr/)
 * [Perl](http://www.perl.org) and [BioPerl](http://www.bioperl.org)
 * [Parallel::ForkManager](http://search.cpan.org/~dlux/Parallel-ForkManager-0.7.5/ForkManager.pm)
@@ -79,7 +79,7 @@ The oclust pipeline bundles together the following open source/public domain sof
 * [HMMER (hmmscan)](http://hmmer.janelia.org/)
 * [vrevcomp](http://www.microbiome.ch/web/Tools.html)
 * [infernal](http://infernal.janelia.org/)
-* [EMBOSS Needleman-Wunsch implementation (needle)](http://emboss.sourceforge.net/), compiled with: `./configure --prefix=~/e/ --disable-shared --without-mysql --without-postgresql --without-axis2c --without-hpdf --without-x --without-pngdriver`
+* [EMBOSS Needleman-Wunsch implementation (needle)](http://emboss.sourceforge.net/), compiled with: `$ ./configure --prefix=~/e/ --disable-shared --without-mysql --without-postgresql --without-axis2c --without-hpdf --without-x --without-pngdriver`
 * [beer](http://en.wikipedia.org/wiki/India_Pale_Ale)
 
 # Contact
