@@ -964,13 +964,12 @@ sub preprocess {
 			my $seq2 = @seqs[$c];
 
 			if ($i != $c) {
-				if ($done{$seq1->display_id . "-" . $seq2->display_id} eq "") {
+				if (!exists($done{$seq1->display_id . "-" . $seq2->display_id}) && !exists($done{$seq2->display_id . "-" . $seq1->display_id})) {
 					print(fh_out ">". $seq2->display_id . "\n");
 					print(fh_out $seq2->seq . "\n");
 
 					# Mark comparison as done
 					$done{$seq1->display_id . "-" . $seq2->display_id} = 1;
-					$done{$seq2->display_id . "-" . $seq1->display_id} = 1;
 				}
 			}
 		}
