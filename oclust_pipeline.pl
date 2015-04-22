@@ -533,6 +533,8 @@ elsif ($setting_distance_method eq "PW" && $setting_parallel_type eq "cluster") 
 
 	print(@files . " jobs have been submitted to the cluster. Now waiting for jobs to finish.\n");
 
+	exit;
+
 	while (1) {
 		# Check if the number of completed log files correspond to the number of submitted jobs
 		my @logs = <$setting_output_dir/logs/*.log>;
@@ -754,33 +756,45 @@ sub finish {
 				substr($seq2, $item, 1) = "";
 			}
 
-			# Delete indels larger than 4
-			my @positions_to_delete;
+			# # Delete indels larger than 4
+			# my @positions_to_delete;
 
-			while ($seq1 =~ m/[ATGC](-{5,})[ATGC]/g) {
-				my $del_start = pos($seq1) - length($1);
-				push(@positions_to_delete, { del_start => $del_start, del_len => length($1) });
-			}
+			# while ($seq1 =~ m/[ATGC](-{5,})[ATGC]/g) {
+			# 	my $del_start = pos($seq1) - length($1);
+			# 	push(@positions_to_delete, { del_start => $del_start, del_len => length($1) });
+			# }
 
-			 for (my $i=@positions_to_delete-1; $i>=0; $i--) {
-				my $item = @positions_to_delete[$i];
+			#  for (my $i=@positions_to_delete-1; $i>=0; $i--) {
+			# 	my $item = @positions_to_delete[$i];
 				
-				substr($seq1, $item->{del_start} - 1, $item->{del_len}) = "";
-				substr($seq2, $item->{del_start} - 1, $item->{del_len}) = "";
-			}
+			# 	substr($seq1, $item->{del_start} - 1, $item->{del_len}) = "";
+			# 	substr($seq2, $item->{del_start} - 1, $item->{del_len}) = "";
+			# }
 
-			my @positions_to_delete;
+			# my @positions_to_delete;
 
-			while ($seq2 =~ m/[ATGC](-{5,})[ATGC]/g) {
-				my $del_start = pos($seq2) - length($1);
-				push(@positions_to_delete, { del_start => $del_start, del_len => length($1) });
-			}
+			# while ($seq2 =~ m/[ATGC](-{5,})[ATGC]/g) {
+			# 	my $del_start = pos($seq2) - length($1);
+			# 	push(@positions_to_delete, { del_start => $del_start, del_len => length($1) });
+			# }
 
-			 for (my $i=@positions_to_delete-1; $i>=0; $i--) {
-				my $item = @positions_to_delete[$i];
+			#  for (my $i=@positions_to_delete-1; $i>=0; $i--) {
+			# 	my $item = @positions_to_delete[$i];
 				
-				substr($seq1, $item->{del_start} - 1, $item->{del_len}) = "";
-				substr($seq2, $item->{del_start} - 1, $item->{del_len}) = "";
+			# 	substr($seq1, $item->{del_start} - 1, $item->{del_len}) = "";
+			# 	substr($seq2, $item->{del_start} - 1, $item->{del_len}) = "";
+			# }
+
+			# Count indels (each indel counted as one event)
+			my $indels1 = 0;
+			my $indels2 = 0;
+
+			while ($str1 =~ m/[ATGC](-+)[ATGC]/g) {
+				$indels1 ++ ;
+			}
+
+			while ($str2 =~ m/[ATGC](-+)[ATGC]/g) {
+				$indels2 ++ ;
 			}
 
 			# Calc identity
@@ -791,20 +805,19 @@ sub finish {
 			my $total = 0;
 
 			for (my $i=0; $i<@t1; $i++) {
-				if (@t1[$i] ne "N" && @t2[$i] ne "N") {
+				my $char1 = @t1[$i];
+				my $char2 = @t2[$i];
 
-					# There are some IUPAC-encoded nucleotides in the miseq data - IGNORE!
-					if (@t1[$i] =~ /[ATGC\-]/ && @t2[$i] =~ /[ATGC\-]/) {
-						if (@t1[$i] ne @t2[$i]) {
-							$differences ++ ;
-						}
-
-						$total ++ ;
+				if ($char1 =~  /^[ATGC]$/ && $char2 =~  /^[ATGC]$/) {
+					if ($char1 ne $char2) {
+						$differences ++ ;
 					}
+
+					$total ++ ;
 				}
 			}
 
-			my $fraction_differences = $differences / $total;
+			my $fraction_differences = ($differences + $indels1 + indels2) / $total;
 			$fraction_differences = sprintf("%.5f", $fraction_differences);
 
 			$distances{$id1}{$id2} = $fraction_differences;
