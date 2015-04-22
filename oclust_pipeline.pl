@@ -789,11 +789,11 @@ sub finish {
 			my $indels1 = 0;
 			my $indels2 = 0;
 
-			while ($str1 =~ m/[ATGC](-+)[ATGC]/g) {
+			while ($seq1 =~ m/[ATGC](-+)[ATGC]/g) {
 				$indels1 ++ ;
 			}
 
-			while ($str2 =~ m/[ATGC](-+)[ATGC]/g) {
+			while ($seq2 =~ m/[ATGC](-+)[ATGC]/g) {
 				$indels2 ++ ;
 			}
 
