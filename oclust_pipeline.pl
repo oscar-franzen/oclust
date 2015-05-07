@@ -317,6 +317,8 @@ if ($setting_human_contamination_check eq "Y") {
 	# First check if it's needed to download the human genome
 	my $hg_path = $cwd . "/db/hg19.fa";
 
+	print("$hg_path\n");
+
 	if ( ! -e $hg_path) {
 		print("Downloading the human genome sequence.\n");
 
@@ -532,8 +534,6 @@ elsif ($setting_distance_method eq "PW" && $setting_parallel_type eq "cluster") 
 	}
 
 	print(@files . " jobs have been submitted to the cluster. Now waiting for jobs to finish.\n");
-
-	exit;
 
 	while (1) {
 		# Check if the number of completed log files correspond to the number of submitted jobs
