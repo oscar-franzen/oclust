@@ -36,7 +36,7 @@ FASTQ files can be converted to FASTA:
    First time executed, `oclust_pipeline.pl` will download the human genome sequence and
    format it.
 
-   ```
+```
    $ ./oclust_pipeline.pl -x <method> -f <input file> -o <output directory> -p <number of CPUs>
 
    General settings:
@@ -65,7 +65,7 @@ FASTQ files can be converted to FASTA:
    -lsf_time [integer]       Runtime hours per job specified as number of hours. [1]
    -lsf_memory [integer]     Requested amount of RAM in MB. [3000]
    -lsf_nb_jobs [integer]    Number of jobs. [20]
-   ```
+```
 
 # Dependencies
 The oclust pipeline bundles together the following open source/public domain software:
