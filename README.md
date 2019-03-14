@@ -8,7 +8,7 @@ A pipeline for clustering long 16S rRNA sequencing reads, or any sequences, into
 * R (should be in path)
   * package _seqinr_ should be installed:
 ```
-   > install.packages("seqinr")
+      > install.packages("seqinr")
 ```
 
 
