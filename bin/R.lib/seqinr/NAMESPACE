@@ -1,3 +1,0 @@
-# Export all names
-useDynLib(seqinr, .registration = TRUE)
-exportPattern(".")

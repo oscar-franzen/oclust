@@ -589,6 +589,10 @@ else {
 	my $cmd = $cwd."bin/cmalign --cpu $setting_cpus -o $setting_output_dir" . "/infernal.sto $cwd" . "bin/RDPinfernalTraindata/bacteria16S_508_mod5.stk.cm $f 2>/dev/null >/dev/null";
 
 	`$cmd`;
+	
+	if (! -s $setting_output_dir . "/infernal.sto") {
+		die("Error: infernal alignment is empty\n");
+	}
 
 	# Convert to fasta and remove sequences without any homologous positions
 	my $in = Bio::AlignIO->new(-file => $setting_output_dir."/infernal.sto", '-format' => 'stockholm');
@@ -652,20 +656,21 @@ else {
 		}
 	}
 
-	my $cmd = "cat $cwd/bin/R/bin/R";
-	my $o = `$cmd`;
+	#my $cmd = "cat $cwd/bin/R/bin/R";
+	#my $o = `$cmd`;
 
-	$o =~ s/\/home\/foobar\/oclust\//$cwd/g;
-	$o =~ s/R_installed/R/g;
+	#$o =~ s/\/home\/foobar\/oclust\//$cwd/g;
+	#$o =~ s/R_installed/R/g;
 
-	open(fh, ">" . $cwd."/bin/R/bin/R.fixed");
-	print(fh "$o\n");
-	close(fh);
+	#open(fh, ">" . $cwd."/bin/R/bin/R.fixed");
+	#print(fh "$o\n");
+	#close(fh);
 
-	my $cmd = "chmod +x $cwd/bin/R/bin/R.fixed";
-	`$cmd`;
+	#my $cmd = "chmod +x $cwd/bin/R/bin/R.fixed";
+	#`$cmd`;
 
-	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd $setting_output_dir"."/infernal.F.fasta $setting_output_dir $setting_hclust_algorithm MSA < $cwd/utils/hclust_fr_aln.R";
+	my $cmd = "R --no-save --no-restore --args $cwd $setting_output_dir"."/infernal.F.fasta $setting_output_dir $setting_hclust_algorithm MSA < $cwd/utils/hclust_fr_aln.R";
+	
 	`$cmd`;
 
 	print("*** oclust running in MSA-mode has finished. *** \nResults are in:\n$setting_output_dir\n");
@@ -857,20 +862,20 @@ sub finish {
 
 	close(fh_dist);
 
-	my $cmd = "cat $cwd/bin/R/bin/R";
-	my $o = `$cmd`;
+	#my $cmd = "cat $cwd/bin/R/bin/R";
+	#my $o = `$cmd`;
 
-	$o =~ s/\/home\/foobar\/oclust\//$cwd/g;
-	$o =~ s/R_installed/R/g;
+	#$o =~ s/\/home\/foobar\/oclust\//$cwd/g;
+	#$o =~ s/R_installed/R/g;
 
-	open(fh, ">" . $cwd."/bin/R/bin/R.fixed");
-	print(fh "$o\n");
-	close(fh);
+	#open(fh, ">" . $cwd."/bin/R/bin/R.fixed");
+	#print(fh "$o\n");
+	#close(fh);
 
-	my $cmd = "chmod +x $cwd/bin/R/bin/R.fixed";
-	`$cmd`;
+	#my $cmd = "chmod +x $cwd/bin/R/bin/R.fixed";
+	#`$cmd`;
 
-	my $cmd = "$cwd/bin/R/bin/R.fixed --no-save --no-restore --args $cwd $setting_output_dir"."/dist.mat $setting_output_dir $setting_hclust_algorithm PW < $cwd/utils/hclust_fr_aln.R";
+	my $cmd = "R --no-save --no-restore --args $cwd $setting_output_dir"."/dist.mat $setting_output_dir $setting_hclust_algorithm PW < $cwd/utils/hclust_fr_aln.R";
 	`$cmd`;
 
 	print("*** oclust running in PW-mode has finished. ***\n\n Results are in:\n$setting_output_dir\n");

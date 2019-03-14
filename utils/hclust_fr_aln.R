@@ -6,7 +6,7 @@ args.output_dir <- args[3]
 args.algo <- args[4]
 args.mode <- args[5]
 
-.libPaths(paste0(args.working_dir,"/bin/R.lib"))
+#.libPaths(paste0(args.working_dir,"/bin/R.lib"))
 
 library(seqinr)
 
