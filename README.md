@@ -81,7 +81,6 @@ The oclust pipeline bundles together the following open source/public domain sof
 * [vrevcomp](http://www.microbiome.ch/web/Tools.html)
 * [infernal](http://infernal.janelia.org/)
 * [EMBOSS Needleman-Wunsch implementation (needle)](http://emboss.sourceforge.net/), compiled with: `$ ./configure --prefix=~/e/ --disable-shared --without-mysql --without-postgresql --without-axis2c --without-hpdf --without-x --without-pngdriver`
-* [beer](http://en.wikipedia.org/wiki/India_Pale_Ale)
 
 # Contact
 * p.oscar.franzen at gmail.com
