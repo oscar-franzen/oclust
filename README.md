@@ -1,4 +1,4 @@
-# About oclust.
+# About oclust
 A pipeline for clustering long 16S rRNA sequencing reads, or any sequences, into
 [Operational Taxonomic Units](http://en.wikipedia.org/wiki/Operational_taxonomic_unit).
 
@@ -87,6 +87,9 @@ The oclust pipeline bundles together the following open source/public domain sof
 * [vrevcomp](http://www.microbiome.ch/web/Tools.html)
 * [infernal](http://infernal.janelia.org/)
 * [EMBOSS Needleman-Wunsch implementation (needle)](http://emboss.sourceforge.net/), compiled with: `$ ./configure --prefix=~/e/ --disable-shared --without-mysql --without-postgresql --without-axis2c --without-hpdf --without-x --without-pngdriver`
+
+# Reference
+* [Improved OTU-picking using long-read 16S rRNA gene amplicon sequencing and generic hierarchical clustering, Franzén et al. Microbiome 2015](https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-015-0105-6)
 
 # Contact
 * p.oscar.franzen at gmail.com
