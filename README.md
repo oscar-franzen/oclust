@@ -11,6 +11,8 @@ A pipeline for clustering long 16S rRNA sequencing reads, or any sequences, into
       > install.packages("seqinr")
 ```
 
+# Note on data
+The pipeline is designed for Pacbio CCS reads - it will not work on raw Pacbio reads.
 
 # Input files
 The only input file to oclust is a file in FASTA format containing the sequencing reads to be
