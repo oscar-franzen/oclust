@@ -6,7 +6,11 @@ A pipeline for clustering long 16S rRNA sequencing reads, or any sequences, into
 * Linux v.2.6.x
 * Perl v.5.10.1
 * R (should be in path)
-  * test
+  * seqinr
+```
+test
+```
+
 
 # Input files
 The only input file to oclust is a file in FASTA format containing the sequencing reads to be
